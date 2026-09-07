@@ -15,6 +15,16 @@ settings:
     CODE_SIGNING_ALLOWED: NO
     OTHER_SWIFT_FLAGS: "$(inherited) -enable-upcoming-feature NonisolatedNonsendingByDefault -enable-upcoming-feature InferIsolatedConformances"
 packages:
+  Persistence:
+    path: Packages/Persistence
+  Data:
+    path: Packages/Data
+  Common:
+    path: Packages/Common
+  Model:
+    path: Packages/Model
+  UI:
+    path: Packages/UI
   Servers:
     path: Packages/Features/Servers
   DesignSystem:
@@ -45,6 +55,11 @@ targets:
           NSAllowsArbitraryLoads: true
         NSLocalNetworkUsageDescription: Gauja connects to the Seerr server address you enter.
     dependencies:
+      - package: Data
+      - package: Common
+      - package: Model
+      - package: UI
+      - package: Dependencies
       - package: Servers
       - package: DesignSystem
       - package: Navigation
@@ -56,6 +71,9 @@ targets:
     platform: iOS
     sources: [AppTests]
     dependencies:
+      - package: Persistence
+      - package: Common
+      - package: Model
       - target: Gauja
       - package: Navigation
   GaujaUITests:

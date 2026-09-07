@@ -59,6 +59,7 @@ jobs:
       - run: python3 tools/ci/check-licenses.py ios
       - run: python3 tools/ci/replay-contract.py ios
       - run: tools/ci/egress-test.sh ios
+      - run: python3 tools/ci/hello-server.py ios
       - name: Phone and tablet smoke
         run: |
           xcodebuild -downloadPlatform iOS

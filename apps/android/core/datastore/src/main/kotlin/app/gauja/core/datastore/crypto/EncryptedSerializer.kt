@@ -8,6 +8,7 @@ import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.Serializer
 import java.io.InputStream
 import java.io.OutputStream
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.protobuf.ProtoBuf
 
@@ -25,6 +26,8 @@ internal class EncryptedSerializer<T>(
             } finally {
                 plaintext.fill(0)
             }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
         } catch (_: Exception) {
             // Never replace unreadable secrets with an empty store or expose crypto/decoder
             // details.

@@ -53,6 +53,7 @@ jobs:
       - run: python3 tools/ci/check-licenses.py android
       - run: python3 tools/ci/replay-contract.py android
       - run: tools/ci/egress-test.sh android
+      - run: python3 tools/ci/hello-server.py android
       - name: Per-ABI release APK sizes
         run: ls -l apps/android/app/build/outputs/apk/release/*.apk
       - name: Retain Android build evidence

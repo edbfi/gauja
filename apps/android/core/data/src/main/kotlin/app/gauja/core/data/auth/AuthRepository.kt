@@ -84,7 +84,7 @@ constructor(
                 retrofit.create(AuthApi::class.java).postAuthLogout().checked()
             } finally {
                 withContext(NonCancellable) {
-                    transport.clearSession(profileId)
+                    transport.clearCredentials(profileId)
                     users.clear(profileId.value.toString())
                 }
             }

@@ -20,6 +20,7 @@ struct LiveServersRepository: ServersRepository {
     let users: UserCacheStore
     let titles: TitleCacheStore
     let clock: WallClock
+    let images: ProfileImages
 
     func observe() async -> AsyncThrowingStream<[ServerProfile], Error> { await sessions.profiles.observe() }
     func save(_ profile: ServerProfile) async throws { try await sessions.profiles.save(profile) }
@@ -60,6 +61,7 @@ struct LiveServersRepository: ServersRepository {
             try await users.clear(id)
             try await titles.clear(id)
             try await preferences.clear(id)
+            try await images.clear(id)
             try await sessions.profiles.remove(id)
         }
     }

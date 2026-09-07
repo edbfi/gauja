@@ -63,6 +63,14 @@ public actor ProfileTransport {
         }
     }
 
+    public func clearCredentials(_ id: ProfileID) async throws {
+        sessions[id]?.clearCookie()
+        try await secrets.write(profileID: id, kind: .sessionCookie, value: nil)
+        try await secrets.write(profileID: id, kind: .apiKey, value: nil)
+        try await secrets.write(profileID: id, kind: .plexToken, value: nil)
+        sessions.removeValue(forKey: id)?.close()
+    }
+
     private func gate(_ id: ProfileID) -> ProfileGate {
         if let gate = gates[id] { return gate }
         let gate = ProfileGate()
@@ -186,7 +194,11 @@ public final class AuthenticatedTransport: ClientTransport {
         authenticated.headerFields[.authorization] = nil
         if let name = HTTPField.Name("X-API-User") { authenticated.headerFields[name] = nil }
         if let name = HTTPField.Name("X-Api-Key") {
-            authenticated.headerFields[name] = try apiKey?.utf8()
+            let value = try apiKey?.utf8()
+            guard value?.unicodeScalars.allSatisfy({ $0.value >= 32 && $0.value != 127 }) ?? true else {
+                throw AppError.validation
+            }
+            authenticated.headerFields[name] = value
         }
         if let username = profile.basicAuthUsername, let password = basicPassword {
             let value = try password.utf8()

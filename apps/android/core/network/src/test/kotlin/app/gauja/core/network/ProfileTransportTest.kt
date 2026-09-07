@@ -88,6 +88,7 @@ class ProfileTransportTest {
                 MockResponse.Builder()
                     .code(302)
                     .addHeader("Location", "https://example.invalid")
+                    .addHeader("Set-Cookie", "connect.sid=must-ignore; Path=/")
                     .addHeader("Deprecation", "@123")
                     .addHeader("Sunset", "Wed, 01 Jul 2026 00:00:00 GMT")
                     .build()
@@ -110,6 +111,12 @@ class ProfileTransportTest {
             assertTrue(request.headers["Authorization"]?.startsWith("Basic ") == true)
             assertEquals(1, diagnostics.read(operator.id).size)
             assertEquals(1, server.requestCount)
+            server.enqueue(MockResponse.Builder().build())
+            factory.withProfile(operator) { client ->
+                client.newCall(Request.Builder().url(server.url("/")).build()).execute().close()
+            }
+            assertNull(server.takeRequest().headers["Cookie"])
+            assertNull(secrets.read(operator.id, SecretKind.SESSION_COOKIE))
             factory.delete(operator.id) {}
         }
     }

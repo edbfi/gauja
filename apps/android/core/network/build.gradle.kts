@@ -10,6 +10,8 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:datastore"))
     implementation(libs.okhttp)
+    implementation(libs.coil.okhttp)
+    implementation(libs.coil.core)
     implementation(project(":core:model"))
     testImplementation(libs.junit)
     testImplementation(project(":core:testing"))

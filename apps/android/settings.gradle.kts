@@ -28,6 +28,7 @@ include(
     ":core:network",
     ":core:data",
     ":core:testing",
+    ":core:ui",
     ":core:database",
     ":core:datastore",
     ":core:designsystem",

@@ -32,6 +32,7 @@ struct LiveAuthRepository: AuthRepository {
                 try await cacheUser(client, id)
             } catch {
                 transport.clearCookie()
+                try await sessions.transport.clearCredentials(id)
                 try await users.clear(id)
                 throw error
             }
@@ -56,10 +57,12 @@ struct LiveAuthRepository: AuthRepository {
                 }
             } catch {
                 transport.clearCookie()
+                try await sessions.transport.clearCredentials(id)
                 try await users.clear(id)
                 throw error
             }
             transport.clearCookie()
+            try await sessions.transport.clearCredentials(id)
             try await users.clear(id)
         }
     }

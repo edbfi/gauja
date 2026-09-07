@@ -18,7 +18,10 @@ nonisolated final class ServerCheckTests: XCTestCase {
             }
             address.tap()
             address.typeText("ftp://invalid")
-            guard address.value as? String == "ftp://invalid" else {
+            let typed = XCTNSPredicateExpectation(
+                predicate: NSPredicate(format: "value == %@", "ftp://invalid"), object: address)
+            // AX snapshots can lag synthesized typing; keep validation's separate deadline unchanged.
+            guard XCTWaiter.wait(for: [typed], timeout: 3) == .completed else {
                 attachState(app, address: address, button: button, error: error)
                 XCTFail("Invalid address was not entered exactly")
                 return false

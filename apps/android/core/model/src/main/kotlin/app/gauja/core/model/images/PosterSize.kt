@@ -5,10 +5,10 @@ package app.gauja.core.model.images
 import app.gauja.core.model.ServerAddress
 import java.net.URI
 
-enum class PosterSize(val path: String) {
-    SMALL("w185"),
-    MEDIUM("w342"),
-    LARGE("w500"),
+enum class PosterSize(val path: String, val width: Int) {
+    SMALL("w185", 185),
+    MEDIUM("w342", 342),
+    LARGE("w500", 500),
 }
 
 fun imageUrl(

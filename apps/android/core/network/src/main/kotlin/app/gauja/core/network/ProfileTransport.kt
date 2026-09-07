@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 package app.gauja.core.network
 
+import app.gauja.core.common.AppError
+import app.gauja.core.common.AppException
 import app.gauja.core.common.IoDispatcher
 import app.gauja.core.common.Secret
 import app.gauja.core.datastore.secrets.SecretKind
@@ -45,7 +47,7 @@ constructor(
             locks
                 .getOrPut(profile.id) { Mutex() }
                 .withLock {
-                    check(profile.id !in deleted) { "Profile was deleted" }
+                    if (profile.id in deleted) throw AppException(AppError.NOT_FOUND)
                     val session = session(profile)
                     try {
                         block(session.client)
@@ -81,6 +83,13 @@ constructor(
     suspend fun clearSession(profileId: ProfileId) {
         sessions[profileId]?.jar?.clear()
         secrets.write(profileId, SecretKind.SESSION_COOKIE, null)
+    }
+
+    suspend fun clearCredentials(profileId: ProfileId) {
+        clearSession(profileId)
+        secrets.write(profileId, SecretKind.API_KEY, null)
+        secrets.write(profileId, SecretKind.PLEX_TOKEN, null)
+        close(profileId)
     }
 
     private suspend fun session(profile: ServerProfile): Session {
@@ -180,7 +189,7 @@ private class ProfileCookies(
 
     @Synchronized
     override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) {
-        if (sameOrigin(url, origin))
+        if (enabled && sameOrigin(url, origin))
             cookies.lastOrNull { it.name == "connect.sid" }?.let { cookie = it }
     }
 
@@ -188,11 +197,18 @@ private class ProfileCookies(
     override fun loadForRequest(url: HttpUrl): List<Cookie> =
         listOfNotNull(
             cookie?.takeIf {
-                sameOrigin(url, origin) && it.matches(url) && it.expiresAt > clock.millis()
+                enabled &&
+                    sameOrigin(url, origin) &&
+                    it.matches(url) &&
+                    it.expiresAt > clock.millis()
             }
         )
 
-    @Synchronized fun secret(): Secret? = cookie?.let { Secret(it.toString().toByteArray()) }
+    @Synchronized
+    fun secret(): Secret? =
+        cookie
+            ?.takeIf { enabled && it.expiresAt > clock.millis() }
+            ?.let { Secret(it.toString().toByteArray()) }
 
     @Synchronized
     fun clear() {

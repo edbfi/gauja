@@ -18,3 +18,11 @@ dependencies {
     testImplementation(libs.turbine)
     testImplementation(libs.robolectric)
 }
+
+// Kotlin 2.x includes the common standard library. DataStore 1.1's legacy
+// coordinates otherwise produce different lock graphs in AGP's compiler/ASM views.
+configurations.configureEach {
+    if (name.startsWith("debug") || name.startsWith("release")) {
+        exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-common")
+    }
+}

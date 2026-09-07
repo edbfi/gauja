@@ -18,6 +18,7 @@ import app.gauja.core.model.servers.PublicSettings
 import app.gauja.core.model.servers.ServerProfile
 import app.gauja.core.model.servers.ServerStatus
 import app.gauja.core.model.status.MediaServerType
+import app.gauja.core.network.ProfileImages
 import app.gauja.core.network.ProfileTransport
 import java.time.Clock
 import javax.inject.Inject
@@ -47,6 +48,7 @@ constructor(
     private val users: UserDao,
     private val titles: TitleDao,
     private val clock: Clock,
+    private val images: ProfileImages,
 ) : ServersRepository {
     override val profiles = store.profiles.map { it.toImmutableList() }
 
@@ -97,6 +99,7 @@ constructor(
             users.clear(profileId.value.toString())
             titles.clear(profileId.value.toString())
             preferences.clear(profileId)
+            images.clear(profileId)
             store.remove(profileId)
         }
     }
