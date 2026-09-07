@@ -52,14 +52,8 @@ internal suspend fun <T> safeApi(operation: suspend () -> T): T =
         throw error
     } catch (error: AppException) {
         throw error
-    } catch (_: javax.net.ssl.SSLException) {
-        throw AppException(AppError.TLS)
-    } catch (_: java.net.UnknownHostException) {
-        throw AppException(AppError.OFFLINE)
-    } catch (_: java.net.ConnectException) {
-        throw AppException(AppError.OFFLINE)
-    } catch (_: java.io.IOException) {
-        throw AppException(AppError.NETWORK)
+    } catch (error: java.io.IOException) {
+        throw AppException(networkError(error))
     } catch (_: SerializationException) {
         throw AppException(AppError.VALIDATION)
     } catch (_: IllegalArgumentException) {
@@ -81,3 +75,14 @@ internal fun <T> Response<T>.checked(): T {
         }
     )
 }
+
+// A failed alternate address can wrap the original TLS rejection (OkHttp fast fallback).
+private fun networkError(error: Throwable): AppError =
+    when {
+        error is javax.net.ssl.SSLException ||
+            error.cause?.let { networkError(it) == AppError.TLS } == true ||
+            error.suppressed.any { networkError(it) == AppError.TLS } -> AppError.TLS
+        error is java.net.UnknownHostException || error is java.net.ConnectException ->
+            AppError.OFFLINE
+        else -> AppError.NETWORK
+    }

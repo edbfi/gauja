@@ -21,7 +21,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 def source_tree():
-    pin = (ROOT / "api/UPSTREAM_COMMIT").read_text().strip()
+    pin = (ROOT / "api/UPSTREAM_COMMIT").read_text().partition("\n")[0].strip()
     if not re.fullmatch(r"[a-f0-9]{40}", pin):
         raise ValueError("Invalid upstream pin")
     directory = ROOT / ".cache" / f"seerr-{pin}"

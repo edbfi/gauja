@@ -76,7 +76,7 @@ class HelloServerTests(unittest.TestCase):
             root = Path(temporary)
             (root / "api").mkdir()
             pin = "a" * 40
-            (root / "api/UPSTREAM_COMMIT").write_text(pin)
+            (root / "api/UPSTREAM_COMMIT").write_text(pin + "\n# Fetched: 2026-09-05\n")
             with patch.object(local, "ROOT", root), patch.object(local, "urlopen", side_effect=OSError):
                 with self.assertRaises(OSError):
                     local.source_tree()
