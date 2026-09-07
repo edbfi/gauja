@@ -46,7 +46,7 @@ def run(environment):
         subprocess.run(["xcrun", "simctl", "boot", identifier], check=True)
         subprocess.run(["xcrun", "simctl", "bootstatus", identifier, "-b"], check=True, timeout=180)
         destination = "platform=iOS Simulator,id=" + identifier
-        subprocess.run(["xcodebuild", "-project", "Gauja.xcodeproj", "-scheme", "Gauja", "-destination", destination,
+        subprocess.run(["xcodebuild", "-project", "Gauja.xcodeproj", "-scheme", "GaujaHello", "-destination", destination,
                         "-derivedDataPath", "DerivedData", "-skipPackagePluginValidation", "build-for-testing",
                         "CODE_SIGNING_ALLOWED=NO"], cwd=ios, check=True)
         products = ios / "DerivedData/Build/Products"
@@ -63,7 +63,7 @@ def run(environment):
         evidence = Path(os.environ.get("RUNNER_TEMP", ROOT / ".cache")) / "native-ci" / ("hello-" + uuid.uuid4().hex + ".xcresult")
         evidence.parent.mkdir(parents=True, exist_ok=True)
         subprocess.run(["xcodebuild", "test-without-building", "-xctestrun", str(output), "-destination", destination,
-                        "-only-testing:GaujaTests/HelloServerTests", "-resultBundlePath", str(evidence)], cwd=ios, check=True)
+                        "-only-testing:GaujaHelloTests/HelloServerTests", "-resultBundlePath", str(evidence)], cwd=ios, check=True)
     finally:
         if output is not None:
             output.unlink(missing_ok=True)

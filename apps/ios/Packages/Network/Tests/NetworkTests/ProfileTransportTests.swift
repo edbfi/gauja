@@ -56,8 +56,8 @@ private func response(_ factory: ProfileTransport, _ profile: ServerProfile, _ p
 @Test(.enabled(if: ProcessInfo.processInfo.environment["GAUJA_TLS_SERVER"] != nil))
 func tlsRequiresBothConfirmedFingerprintAndMatchingHostname() async throws {
     let base = try #require(ProcessInfo.processInfo.environment["GAUJA_TLS_SERVER"])
-    let fingerprint = try #require(
-        CertificateFingerprint(try #require(ProcessInfo.processInfo.environment["GAUJA_TLS_FINGERPRINT"])))
+    let rawFingerprint = try #require(ProcessInfo.processInfo.environment["GAUJA_TLS_FINGERPRINT"])
+    let fingerprint = try #require(CertificateFingerprint(rawFingerprint))
     let wrong = try #require(CertificateFingerprint(String(repeating: "0", count: 64)))
     let address = try #require(ServerAddress(base))
     let factory = ProfileTransport(secrets: MemorySecrets(), clock: .system, diagnostics: DeprecationStore())

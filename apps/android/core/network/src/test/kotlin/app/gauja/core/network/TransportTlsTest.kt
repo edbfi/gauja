@@ -9,6 +9,7 @@ import app.gauja.core.model.servers.ServerProfile
 import app.gauja.core.model.servers.TlsMode
 import app.gauja.core.testing.FakeClock
 import app.gauja.core.testing.MemorySecrets
+import java.io.IOException
 import java.util.UUID
 import javax.net.ssl.SSLException
 import kotlinx.coroutines.Dispatchers
@@ -61,7 +62,12 @@ class TransportTlsTest {
                                 assertEquals("trusted", it.body.string())
                             }
                     }
-                } catch (_: SSLException) {
+                } catch (failure: IOException) {
+                    // OkHttp can retain the TLS rejection as suppressed after an IPv6 fallback.
+                    assertTrue(
+                        "Failure must include a certificate/hostname rejection",
+                        failure.isTlsFailure(),
+                    )
                     rejected = true
                 }
                 assertTrue("TLS trust scenario $index", rejected == (index != 1))
@@ -71,3 +77,6 @@ class TransportTlsTest {
         }
     }
 }
+
+private fun Throwable.isTlsFailure(): Boolean =
+    this is SSLException || cause?.isTlsFailure() == true || suppressed.any { it.isTlsFailure() }

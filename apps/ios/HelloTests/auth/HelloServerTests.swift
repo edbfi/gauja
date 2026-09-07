@@ -10,9 +10,17 @@ import Testing
 
 @Suite(.serialized)
 struct HelloServerTests {
-    @Test func cacheStateRenderersSupportLargestText() {
+    @Test func cacheStateRenderersSupportLargestText() throws {
         let states: [CachedTitleRenderer.State] = [.loading, .empty, .denied, .failed(.network)]
-        for state in states {
+        let title = TitleSummary(
+            id: try #require(TMDBID(rawValue: 42)), mediaType: .movie,
+            title: "A journey along the river", year: 2026, posterPath: nil,
+            rating: 8.2, status: .available)
+        let cached = CachedTitleRenderer.State.offline(Cached(title, fetchedAt: FakeClock().clock.now()))
+        #expect(
+            CachedTitleRenderer.contentHeight(cached, largeText: true)
+                > CachedTitleRenderer.contentHeight(cached, largeText: false))
+        for state in states + [cached] {
             #expect(CachedTitleRenderer.render(state, largeText: true))
         }
     }
@@ -66,16 +74,16 @@ struct HelloServerTests {
         control.invalidateAndCancel()
         #expect((response as? HTTPURLResponse)?.statusCode == 204)
         // Framework startup is separate from read-through in an already interactive app.
-        #expect(CachedTitleRenderer.render(title))
+        #expect(CachedTitleRenderer.render(.offline(Cached(title, fetchedAt: clock.now()))))
         let timer = ContinuousClock()
         let start = timer.now
         let poster = try await platform.images.load(profile.id, source: "/gauja-test.png", size: .medium, offline: true)
         let cached = try #require(try await titles.read(profileID: profile.id, mediaType: "movie", tmdbID: 42))
-        #expect(CachedTitleRenderer.render(cached.value, poster: poster))
+        #expect(CachedTitleRenderer.render(.offline(cached), poster: poster))
         let elapsed = start.duration(to: timer.now)
         print("cached-render-duration=\(elapsed)")
         #expect(elapsed <= .milliseconds(300))
-        #expect(CachedTitleRenderer.render(cached.value, largeText: true))
+        #expect(CachedTitleRenderer.render(.offline(cached), largeText: true))
         try await platform.servers.delete(profile.id)
         #expect(try await users.read(profile.id) == nil)
         #expect(try await secrets.read(profileID: profile.id, kind: .sessionCookie) == nil)

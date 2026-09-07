@@ -16,10 +16,14 @@
             case offline(Cached<TitleSummary>)
         }
 
-        public static func render(_ title: TitleSummary, largeText: Bool = false, poster: CGImage? = nil) -> Bool {
-            render(
-                .offline(Cached(title, fetchedAt: Date(timeIntervalSince1970: 0))), largeText: largeText, poster: poster
-            )
+        public static func contentHeight(_ state: State, largeText: Bool) -> CGFloat {
+            let content = GaujaTheme {
+                CachedTitleContent(state: state, poster: nil).frame(width: 220)
+                    .environment(\.dynamicTypeSize, largeText ? .accessibility5 : .large)
+            }
+            let host = UIHostingController(rootView: content)
+            host.traitOverrides.preferredContentSizeCategory = largeText ? .accessibilityExtraExtraExtraLarge : .large
+            return host.sizeThatFits(in: CGSize(width: 220, height: .greatestFiniteMagnitude)).height
         }
 
         public static func render(_ state: State, largeText: Bool = false, poster: CGImage? = nil) -> Bool {
@@ -28,6 +32,7 @@
                     .environment(\.dynamicTypeSize, largeText ? .accessibility5 : .large)
             }
             let host = UIHostingController(rootView: content)
+            host.traitOverrides.preferredContentSizeCategory = largeText ? .accessibilityExtraExtraExtraLarge : .large
             let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 240, height: 1600))
             window.rootViewController = host
             window.isHidden = false

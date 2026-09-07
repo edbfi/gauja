@@ -31,6 +31,7 @@ import app.gauja.core.network.DeprecationStore
 import app.gauja.core.network.ProfileImages
 import app.gauja.core.network.ProfileTransport
 import app.gauja.core.testing.CachedTitleRenderer
+import app.gauja.core.testing.CachedTitleState
 import app.gauja.core.testing.FakeClock
 import app.gauja.core.testing.FixtureLoader
 import app.gauja.core.testing.MemoryProfiles
@@ -210,9 +211,13 @@ class HelloServerTest {
                         MediaStatus.UNKNOWN,
                     )
                 )
+            val fetchedAt = mutableStateOf(clock.instant())
             val displayedPoster = mutableStateOf<BitmapPainter?>(null)
             compose.setContent {
-                CachedTitleRenderer(rendered.value, poster = displayedPoster.value)
+                CachedTitleRenderer(
+                    CachedTitleState.Offline(Cached(rendered.value, fetchedAt.value)),
+                    poster = displayedPoster.value,
+                )
             }
             compose.waitForIdle()
             val started = System.nanoTime()
@@ -235,6 +240,7 @@ class HelloServerTest {
                 )
             compose.runOnIdle {
                 rendered.value = title
+                fetchedAt.value = java.time.Instant.ofEpochMilli(cached.fetchedAt)
                 displayedPoster.value = poster
             }
             compose.onNodeWithText("Synthetic cached title").assertIsDisplayed()

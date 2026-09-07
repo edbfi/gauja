@@ -25,6 +25,7 @@ dependencies {
     implementation(project(":core:compat"))
     testImplementation(libs.robolectric)
     testImplementation(libs.compose.test)
+    testImplementation(libs.compose.foundation)
     testImplementation(libs.sqlite)
     testImplementation(libs.room.runtime)
     testImplementation(libs.turbine)

@@ -73,13 +73,22 @@ targets:
     platform: iOS
     sources: [AppTests]
     dependencies:
-      - package: Data
-      - package: GaujaTesting
       - package: Persistence
       - package: Common
       - package: Model
       - target: Gauja
       - package: Navigation
+  GaujaHelloTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [HelloTests]
+    dependencies:
+      - target: Gauja
+      - package: Data
+      - package: GaujaTesting
+      - package: Persistence
+      - package: Common
+      - package: Model
   GaujaUITests:
     type: bundle.ui-testing
     platform: iOS
@@ -87,6 +96,15 @@ targets:
     dependencies:
       - target: Gauja
 schemes:
+  GaujaHello:
+    build:
+      targets:
+        Gauja: all
+        GaujaHelloTests: [test]
+    test:
+      targets:
+        - name: GaujaHelloTests
+          parallelizable: false
   Gauja:
     build:
       targets:

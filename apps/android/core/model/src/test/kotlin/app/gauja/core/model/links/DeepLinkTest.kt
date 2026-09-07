@@ -3,6 +3,7 @@
 package app.gauja.core.model.links
 
 import app.gauja.core.model.ServerAddress
+import app.gauja.core.model.media.TmdbId
 import app.gauja.core.model.servers.ProfileId
 import app.gauja.core.model.servers.ServerProfile
 import java.util.UUID
@@ -20,7 +21,7 @@ class DeepLinkTest {
 
     @Test
     fun canonicalAndWebLinksKeepProfileAndIdentity() {
-        val target = LinkTarget.Media(LinkTarget.Kind.MOVIE, 42)
+        val target = LinkTarget.Media(LinkTarget.Kind.MOVIE, TmdbId(42))
         assertEquals(
             target,
             parseDeepLink("gauja://server/${profile.id.value}/movie/42", listOf(profile))?.target,
@@ -44,6 +45,7 @@ class DeepLinkTest {
             listOf(
                 "https://foreign.invalid/seerr/movie/42",
                 "https://example.invalid/seerr/movie/0",
+                "https://example.invalid/seerr/reset-password/1-1-1-1-1",
                 "https://example.invalid/seerr/movie/42/extra",
                 "https://example.invalid/seerr/movie/%34%32",
                 "https://example.invalid/seerr/../movie/42",

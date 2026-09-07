@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 package app.gauja.core.model.links
 
+import app.gauja.core.model.media.TmdbId
 import app.gauja.core.model.servers.ProfileId
 import app.gauja.core.model.servers.ServerProfile
 import java.net.URI
 import java.util.UUID
 
 sealed interface LinkTarget {
-    data class Media(val kind: Kind, val id: Int) : LinkTarget
+    data class Media(val kind: Kind, val id: TmdbId) : LinkTarget
 
     data object Requests : LinkTarget
 
@@ -43,7 +44,7 @@ fun parseDeepLink(raw: String, profiles: List<ServerProfile>): DeepLink? {
         if (parts.size != 2) return null
         val id =
             try {
-                ProfileId(UUID.fromString(parts[0]))
+                ProfileId(canonicalUuid(parts[0]) ?: return null)
             } catch (_: IllegalArgumentException) {
                 return null
             }
@@ -73,7 +74,7 @@ fun parseDeepLink(raw: String, profiles: List<ServerProfile>): DeepLink? {
                 "resetpassword",
                 "reset-password" ->
                     try {
-                        LinkTarget.ResetPassword(UUID.fromString(parts[1]))
+                        LinkTarget.ResetPassword(canonicalUuid(parts[1]) ?: return null)
                     } catch (_: IllegalArgumentException) {
                         return null
                     }
@@ -83,9 +84,15 @@ fun parseDeepLink(raw: String, profiles: List<ServerProfile>): DeepLink? {
                     val kind =
                         LinkTarget.Kind.entries.firstOrNull { it.name.lowercase() == parts[0] }
                             ?: return null
-                    LinkTarget.Media(kind, parts[1].toIntOrNull()?.takeIf { it > 0 } ?: return null)
+                    LinkTarget.Media(
+                        kind,
+                        TmdbId(parts[1].toIntOrNull()?.takeIf { it > 0 } ?: return null),
+                    )
                 }
             }
         }
     return DeepLink(candidates, target)
 }
+
+private fun canonicalUuid(value: String): UUID? =
+    UUID.fromString(value).takeIf { it.toString().equals(value, ignoreCase = true) }

@@ -15,6 +15,7 @@ import Testing
     #expect(parseDeepLink("gauja://server/\(profile.id.rawValue)/movie/42", profiles: [profile])?.target == target)
     #expect(parseDeepLink("https://example.invalid/seerr/movie/42", profiles: [profile])?.target == target)
     for url in [
+        "https://example.invalid/seerr/reset-password/1-1-1-1-1",
         "https://foreign.invalid/seerr/movie/42", "https://example.invalid/seerr/movie/0",
         "https://example.invalid/seerr/movie/42/extra", "https://example.invalid/seerr/movie/%34%32",
         "https://example.invalid/seerr/../movie/42", "gauja://server/\(UUID())/requests",

@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Gauja contributors
 # SPDX-License-Identifier: AGPL-3.0-or-later
-included: [App, AppTests, AppUITests, Packages]
+included: [App, AppTests, AppUITests, HelloTests, Packages]
 excluded: ["**/Generated", "**/.build", "**/Package.swift"]
 only_rules: [file_length, function_body_length, type_body_length, cyclomatic_complexity]
 file_length:

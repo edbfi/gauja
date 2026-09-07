@@ -13,21 +13,9 @@ import androidx.compose.ui.unit.dp
 import app.gauja.core.common.AppError
 import app.gauja.core.designsystem.GaujaTheme
 import app.gauja.core.model.media.MediaType
-import app.gauja.core.model.media.TitleSummary
 import app.gauja.core.model.media.TmdbId
-import app.gauja.core.model.servers.Cached
 import app.gauja.core.ui.media.TitleCard
 import app.gauja.core.ui.state.ContentMessage
-import java.time.Instant
-
-@Composable
-fun CachedTitleRenderer(
-    title: TitleSummary,
-    modifier: Modifier = Modifier,
-    poster: Painter? = null,
-) {
-    CachedTitleRenderer(CachedTitleState.Offline(Cached(title, Instant.EPOCH)), modifier, poster)
-}
 
 @Composable
 fun CachedTitleRenderer(
