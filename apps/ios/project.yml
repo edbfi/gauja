@@ -100,7 +100,7 @@ schemes:
     build:
       targets:
         Gauja: all
-        GaujaHelloTests: [test]
+        GaujaHelloTests: all
     test:
       targets:
         - name: GaujaHelloTests

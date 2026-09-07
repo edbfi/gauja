@@ -23,7 +23,7 @@
             }
             let host = UIHostingController(rootView: content)
             host.traitOverrides.preferredContentSizeCategory = largeText ? .accessibilityExtraExtraExtraLarge : .large
-            return host.sizeThatFits(in: CGSize(width: 220, height: .greatestFiniteMagnitude)).height
+            return host.sizeThatFits(in: CGSize(width: 220, height: CGFloat.greatestFiniteMagnitude)).height
         }
 
         public static func render(_ state: State, largeText: Bool = false, poster: CGImage? = nil) -> Bool {
@@ -43,10 +43,11 @@
             host.view.frame = window.bounds
             host.view.setNeedsLayout()
             host.view.layoutIfNeeded()
+            var rendered = false
             let image = UIGraphicsImageRenderer(size: host.view.bounds.size).image { _ in
-                host.view.drawHierarchy(in: host.view.bounds, afterScreenUpdates: true)
+                rendered = host.view.drawHierarchy(in: host.view.bounds, afterScreenUpdates: true)
             }
-            return image.cgImage?.width == Int(host.view.bounds.width * image.scale)
+            return rendered && image.cgImage?.width == Int(host.view.bounds.width * image.scale)
         }
     }
 

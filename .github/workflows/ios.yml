@@ -51,7 +51,7 @@ jobs:
           xcodegen generate
           mkdir -p Gauja.xcodeproj/project.xcworkspace/xcshareddata/swiftpm
           cp Package.resolved Gauja.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
-          xcodebuild -project Gauja.xcodeproj -scheme Gauja -destination 'generic/platform=iOS Simulator' -derivedDataPath DerivedData -skipPackagePluginValidation -onlyUsePackageVersionsFromResolvedFile build CODE_SIGNING_ALLOWED=NO
+          xcodebuild -project Gauja.xcodeproj -scheme GaujaHello -destination 'generic/platform=iOS Simulator' -derivedDataPath DerivedData -skipPackagePluginValidation -onlyUsePackageVersionsFromResolvedFile build CODE_SIGNING_ALLOWED=NO
       - name: Live server acceptance
         run: |
           xcodebuild -downloadPlatform iOS
