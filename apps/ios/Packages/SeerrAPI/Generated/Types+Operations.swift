@@ -11427,13 +11427,54 @@ public enum Operations {
             public struct Ok: Sendable, Hashable {
                 /// - Remark: Generated from `#/paths/auth/local/POST/responses/200/content`.
                 @frozen public enum Body: Sendable, Hashable {
+                    /// - Remark: Generated from `#/paths/auth/local/POST/responses/200/content/json`.
+                    public struct jsonPayload: Codable, Hashable, Sendable {
+                        /// - Remark: Generated from `#/paths/auth/local/POST/responses/200/content/json/id`.
+                        public var id: Swift.Int
+                        /// - Remark: Generated from `#/paths/auth/local/POST/responses/200/content/json/displayName`.
+                        public var displayName: Swift.String?
+                        /// - Remark: Generated from `#/paths/auth/local/POST/responses/200/content/json/permissions`.
+                        public var permissions: Swift.Double?
+                        /// - Remark: Generated from `#/paths/auth/local/POST/responses/200/content/json/requestCount`.
+                        public var requestCount: Swift.Double?
+                        /// - Remark: Generated from `#/paths/auth/local/POST/responses/200/content/json/warnings`.
+                        public var warnings: [Swift.String]?
+                        /// Creates a new `jsonPayload`.
+                        ///
+                        /// - Parameters:
+                        ///   - id:
+                        ///   - displayName:
+                        ///   - permissions:
+                        ///   - requestCount:
+                        ///   - warnings:
+                        public init(
+                            id: Swift.Int,
+                            displayName: Swift.String? = nil,
+                            permissions: Swift.Double? = nil,
+                            requestCount: Swift.Double? = nil,
+                            warnings: [Swift.String]? = nil
+                        ) {
+                            self.id = id
+                            self.displayName = displayName
+                            self.permissions = permissions
+                            self.requestCount = requestCount
+                            self.warnings = warnings
+                        }
+                        public enum CodingKeys: String, CodingKey {
+                            case id
+                            case displayName
+                            case permissions
+                            case requestCount
+                            case warnings
+                        }
+                    }
                     /// - Remark: Generated from `#/paths/auth/local/POST/responses/200/content/application\/json`.
-                    case json(Components.Schemas.User)
+                    case json(Operations.postAuthLocal.Output.Ok.Body.jsonPayload)
                     /// The associated value of the enum case if `self` is `.json`.
                     ///
                     /// - Throws: An error if `self` is not `.json`.
                     /// - SeeAlso: `.json`.
-                    public var json: Components.Schemas.User {
+                    public var json: Operations.postAuthLocal.Output.Ok.Body.jsonPayload {
                         get throws {
                             switch self {
                             case let .json(body):

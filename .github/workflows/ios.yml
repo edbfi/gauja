@@ -5,7 +5,7 @@ on:
   pull_request:
     paths: ['apps/ios/**', 'api/**', 'design/**', 'tools/**', 'deny.toml', '.agents/rules/**', '.github/workflows/ios.yml']
   push:
-    branches: [main]
+    branches: [main, feat/core-platform-layers]
     paths: ['apps/ios/**', 'api/**', 'design/**', 'tools/**', 'deny.toml', '.agents/rules/**', '.github/workflows/ios.yml']
 permissions:
   contents: read
@@ -39,6 +39,7 @@ jobs:
           xcode-version: '26.6'
       - run: brew install xcodegen swiftlint xcodes
       - run: tools/contract/python.sh --install
+      - run: python3 tools/contract/bundle-resources.py --check
       - run: tools/codegen/generate.sh --check --platform ios
       - run: tools/ci/check-swift.sh
       - run: tools/ci/check-package-graph.sh
@@ -52,7 +53,7 @@ jobs:
           xcodebuild -project Gauja.xcodeproj -scheme Gauja -destination 'generic/platform=iOS Simulator' -derivedDataPath DerivedData -skipPackagePluginValidation -onlyUsePackageVersionsFromResolvedFile build CODE_SIGNING_ALLOWED=NO
       - name: Swift Testing packages
         run: |
-          for package in Model Compat SeerrAPI Network Data; do
+          for package in Model Common Compat SeerrAPI Persistence Network Data; do
             swift test --package-path "apps/ios/Packages/$package" --disable-automatic-resolution
           done
       - run: python3 tools/ci/check-licenses.py ios

@@ -30,6 +30,12 @@ detekt = "1.23.8"
 composeRules = "0.4.28"
 dependencyAnalysis = "3.19.1"
 
+room = "3.0.2"
+sqlite = "2.6.2"
+datastore = "1.1.7"
+coil = "3.6.1"
+immutable = "0.4.0"
+
 [libraries]
 inject = { module = "javax.inject:javax.inject", version.ref = "inject" }
 agp = { module = "com.android.tools.build:gradle", version.ref = "agp" }
@@ -71,6 +77,16 @@ espresso = { module = "androidx.test.espresso:espresso-core", version.ref = "esp
 androidx-test = { module = "androidx.test:runner", version.ref = "androidxTest" }
 androidx-junit = { module = "androidx.test.ext:junit", version.ref = "androidxJunit" }
 compose-rules = { module = "io.nlopez.compose.rules:detekt", version.ref = "composeRules" }
+
+room-runtime = { module = "androidx.room3:room3-runtime", version.ref = "room" }
+room-compiler = { module = "androidx.room3:room3-compiler", version.ref = "room" }
+sqlite = { module = "androidx.sqlite:sqlite", version.ref = "sqlite" }
+datastore-core = { module = "androidx.datastore:datastore", version.ref = "datastore" }
+datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+serialization-protobuf = { module = "org.jetbrains.kotlinx:kotlinx-serialization-protobuf", version.ref = "serialization" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
+immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "immutable" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

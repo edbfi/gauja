@@ -28,6 +28,4 @@ public struct ServerSnapshot: Sendable, Equatable {
     }
 }
 
-// Seerr server/constants/index.ts at 69f73a6f1486fdb51b8ddae9a94a8dfb629f461c.
-public enum MediaServerType: Sendable { case plex, jellyfin, emby, notConfigured, unknown }
 public enum Compatibility: Sendable { case tested, tooOld, untested, unknown }

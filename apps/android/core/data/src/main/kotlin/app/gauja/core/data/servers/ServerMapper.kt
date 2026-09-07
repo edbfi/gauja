@@ -6,9 +6,9 @@ import app.gauja.core.api.models.GetStatus200Response
 import app.gauja.core.api.models.PublicSettings
 import app.gauja.core.compat.ServerVersion
 import app.gauja.core.model.Compatibility
-import app.gauja.core.model.MediaServerType
 import app.gauja.core.model.ServerAddress
 import app.gauja.core.model.ServerSnapshot
+import app.gauja.core.model.status.MediaServerType
 
 internal fun mapServer(
     address: ServerAddress,
@@ -23,12 +23,10 @@ internal fun mapServer(
         status.restartRequired,
         settings.localLogin,
         settings.mediaServerLogin,
-        when (settings.mediaServerType) {
-            1.0 -> MediaServerType.PLEX
-            2.0 -> MediaServerType.JELLYFIN
-            3.0 -> MediaServerType.EMBY
-            4.0 -> MediaServerType.NOT_CONFIGURED
-            else -> MediaServerType.UNKNOWN
-        },
+        MediaServerType.fromWire(
+            settings.mediaServerType
+                ?.takeIf { it.isFinite() && it == it.toInt().toDouble() }
+                ?.toInt()
+        ),
         ServerVersion.parse(status.version)?.compatibility() ?: Compatibility.UNKNOWN,
     )

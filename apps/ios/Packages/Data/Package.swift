@@ -10,6 +10,7 @@ let package = Package(
     dependencies: [
         .package(path: "../SeerrAPI"),
         .package(path: "../Model"),
+        .package(path: "../Persistence"),
         .package(path: "../Common"),
         .package(path: "../Compat"),
         .package(path: "../Network"),
@@ -20,7 +21,7 @@ let package = Package(
         .target(
             name: "Data",
             dependencies: [
-                "SeerrAPI", "Model", "Common", "Compat", "Network",
+                "SeerrAPI", "Model", "Common", "Persistence", "Compat", "Network",
                 .product(name: "Dependencies", package: "swift-dependencies"),
                 .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
             ],

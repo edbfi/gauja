@@ -25,7 +25,7 @@ def main():
     args = parser.parse_args()
     if args.platform == "android":
         subprocess.run([str(ROOT / "apps/android/gradlew"), "--project-dir", str(ROOT / "apps/android"),
-                        ":core:network:test", "--tests", "*ProbeTransportTest", "--rerun-tasks", "--quiet"], check=True)
+                        ":core:network:testDebugUnitTest", "--tests", "*ProbeTransportTest", "--rerun-tasks", "--quiet"], check=True)
         assert_android_results(ROOT / "apps/android/core/network/build/test-results/test/TEST-app.gauja.core.network.ProbeTransportTest.xml")
     else:
         paths = []

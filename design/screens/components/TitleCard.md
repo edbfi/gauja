@@ -28,3 +28,19 @@ Signed-in viewing; request actions follow RequestButton. Availability does not i
 ## Acceptance criteria
 
 A recycled cell opens the currently bound identity; missing poster/title never crashes. Status and title remain audible and legible at largest text size.
+
+## Phase 4 hello-server acceptance flow
+
+This is a test-only composition, absent from release navigation. The harness initializes the
+pinned local Seerr with synthetic local users, then the native repository signs in through
+POST /auth/local, fetches GET /auth/me, and persists the mapped user with its fetch timestamp.
+A synthetic title is explicitly seeded into the same profile's title cache; it is not a
+recorded media response. The card renders that cached title and cached artwork with network
+access disabled. The cache-to-render interval must be at most 300 ms, with zero HTTP requests.
+
+The containing test state shows loading before the cache read, an empty explanation when no
+cached title exists, a safe error with retry for failed reads, and an offline timestamp while
+retaining the card. A missing authenticated user produces permission-denied content. The card
+itself has no request action. Unknown media types disable opening; unknown status ordinals
+render a neutral label. Tests cover font scaling, missing artwork, recycled identity, both
+themes, profile deletion, session restoration, and a 401 affecting only its own profile.

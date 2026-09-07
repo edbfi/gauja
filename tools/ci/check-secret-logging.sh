@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
 # Secret-logging guard (PRD §10, §14.1 `check-secret-logging`): no log call may format a
-# value from the secrets layer. The symbol list below is confirmed in Phase 4 when
-# core/datastore / Persistence name the real types; the scan itself is complete.
+# value from the secrets layer. Names cover the concrete encrypted stores, Keychain,
+# opaque Secret wrapper, and credential-bearing transport fields.
 #
 # Sources are walked character by character with string, comment and parenthesis state, so a log
 # call is scanned from its first token to the parenthesis that closes it (following chained
@@ -23,12 +23,12 @@ Scans Kotlin and Swift sources under PATH... (default: apps) for log calls
 that mention a secret-layer symbol, including calls split across lines.
 Generated directories and local build/dependency caches are skipped.
   --symbols  comma-separated identifiers
-             (default: SecretStore,apiKey,sessionCookie,plexToken,basicAuthPassword)
+             (default: SecretStore,EncryptedSecretStore,KeychainStore,Secret,apiKey,sessionCookie,plexToken,basicAuthPassword,basicPassword,secrets)
 Exits 0 when there are no sources yet; 1 on any offending line.
 USAGE
 }
 
-symbols="SecretStore,apiKey,sessionCookie,plexToken,basicAuthPassword"
+symbols="SecretStore,EncryptedSecretStore,KeychainStore,Secret,apiKey,sessionCookie,plexToken,basicAuthPassword,basicPassword,secrets"
 paths=()
 while [[ $# -gt 0 ]]; do
   case "$1" in
