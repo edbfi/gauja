@@ -18,8 +18,8 @@ struct HelloServerTests {
             rating: 8.2, status: .available)
         let cached = CachedTitleRenderer.State.offline(Cached(title, fetchedAt: FakeClock().clock.now()))
         #expect(
-            CachedTitleRenderer.contentHeight(cached, largeText: true)
-                > CachedTitleRenderer.contentHeight(cached, largeText: false))
+            CachedTitleRenderer.contentHeight(title, largeText: true)
+                > CachedTitleRenderer.contentHeight(title, largeText: false))
         for state in states + [cached] {
             #expect(CachedTitleRenderer.render(state, largeText: true))
         }

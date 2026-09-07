@@ -32,10 +32,12 @@ import SwiftUI
             guard let bootstrap else { return }
             let platform = try await bootstrap.value
             self.platform = platform
-            await foreground()
+            // Cached preferences must render while a slow server status refresh is in flight.
+            async let refresh: Void = foreground()
             for try await preferences in await platform.preferences.observe() {
                 self.preferences = preferences
             }
+            await refresh
         } catch is CancellationError { return } catch {
             bootstrap = nil
             storageError = .unknown

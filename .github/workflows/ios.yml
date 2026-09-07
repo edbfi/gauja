@@ -44,6 +44,7 @@ jobs:
       - run: tools/ci/check-swift.sh
       - run: tools/ci/check-package-graph.sh
       - run: python3 tools/ci/check-api-boundary.py
+      - run: tools/ci/egress-test.sh ios
       - name: Generate and build app
         working-directory: apps/ios
         run: |
@@ -51,6 +52,10 @@ jobs:
           mkdir -p Gauja.xcodeproj/project.xcworkspace/xcshareddata/swiftpm
           cp Package.resolved Gauja.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
           xcodebuild -project Gauja.xcodeproj -scheme Gauja -destination 'generic/platform=iOS Simulator' -derivedDataPath DerivedData -skipPackagePluginValidation -onlyUsePackageVersionsFromResolvedFile build CODE_SIGNING_ALLOWED=NO
+      - name: Live server acceptance
+        run: |
+          xcodebuild -downloadPlatform iOS
+          python3 tools/ci/hello-server.py ios
       - name: Swift Testing packages
         run: |
           for package in Model Common Compat SeerrAPI Persistence Network Data; do
@@ -58,11 +63,6 @@ jobs:
           done
       - run: python3 tools/ci/check-licenses.py ios
       - run: python3 tools/ci/replay-contract.py ios
-      - run: tools/ci/egress-test.sh ios
-      - name: Live server acceptance
-        run: |
-          xcodebuild -downloadPlatform iOS
-          python3 tools/ci/hello-server.py ios
       - name: Phone and tablet smoke
         run: |
           xcodes runtimes install "iOS 18.6"

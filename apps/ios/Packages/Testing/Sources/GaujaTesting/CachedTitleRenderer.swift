@@ -16,9 +16,9 @@
             case offline(Cached<TitleSummary>)
         }
 
-        public static func contentHeight(_ state: State, largeText: Bool) -> CGFloat {
+        public static func contentHeight(_ title: TitleSummary, largeText: Bool) -> CGFloat {
             let content = GaujaTheme {
-                CachedTitleContent(state: state, poster: nil).frame(width: 220)
+                TitleCard(title: title) { _, _ in }.frame(width: 220)
                     .environment(\.dynamicTypeSize, largeText ? .accessibility5 : .large)
             }
             let host = UIHostingController(rootView: content)
