@@ -319,7 +319,7 @@ Governed by `.agents/rules/swift-6_3-ios-app.md`.
 | DI | `swift-dependencies` |
 | Networking | `URLSession`; generated client from `swift-openapi-generator` (pinned executable; committed output) isolated in the `SeerrAPI` package |
 | Persistence | SwiftData for caches; Keychain for secrets; `UserDefaults` via a typed wrapper for non-secret settings |
-| Images | A small `URLSession`-based pipeline with `NSCache` and on-disk cache (choice of a third-party loader such as Nuke is an open question — §18) |
+| Images | Own `URLSession` pipeline with ImageIO downsampling, `NSCache` (64 MiB) and a profile-isolated disk cache (256 MiB); measured decision recorded in §18 risk 7 |
 | Testing | Swift Testing; XCUITest smoke lane on a simulator |
 | Quality | swift-format (toolchain), SwiftLint strict |
 
@@ -474,7 +474,7 @@ Gauja is unaffiliated with the Seerr project. Store listings say so, use the nam
 | 4 | **Apple review of an AGPL app.** | Exception (§15.2); precedent exists for GPL-family apps with such exceptions. |
 | 5 | **Auth edge cases** (proxies, self-signed TLS, Plex token expiry, Quick Connect timing). | Dedicated test matrix in `design/screens/auth/`; per-profile trust modes (§6). |
 | 6 | **Android minSdk.** A floor of 30 covers ~87% of active devices (April 2026), roughly parity with the iOS 18 floor; the remaining ~13% are Android 8–10 devices. | Decided: 30. The rule file is amended to match. Revisit only by amending the rule file first. |
-| 7 | **iOS image pipeline.** Own `URLSession` loader vs. a third-party library. | Record the decision with the image-loading implementation after measuring against §9 targets. |
+| 7 | **iOS image pipeline.** Own `URLSession` loader vs. a third-party library. | Decided in Phase 4: retain Gauja’s loader described in §11.3. Native simulator acceptance renders a cached `TitleCard` and artwork within the §9 300 ms offline budget with zero HTTP requests; disk-cache reopen and per-profile deletion tests pass. This measures an already interactive app using a synthetic 2 × 3 poster, not cold start or a realistic scrolling workload. Scroll jank, heap growth, full-size artwork and release-install budgets remain part of the Phase 11 audit; add a library only if measurements justify it. [Native acceptance evidence](https://github.com/edbpede/gauja/actions/runs/34148352646). |
 | 8 | **Seerr's Overseerr/Jellyseerr merge is ongoing** (`server/lib/overseerrMerge.ts`); endpoints may be renamed with `Deprecation` headers. | §4.3 and §4.4. |
 | 9 | **Webhook JSON editor.** Native editing of Seerr's templated JSON is fiddly. | Monospaced editor with variable-insertion palette and server-side validation via `/settings/notifications/webhook/test`. |
 | 10 | **Notifications (deferred).** Users will ask. | Greyed-out entry, §7 explanation in About, roadmap statement in README. |

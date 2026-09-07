@@ -5,7 +5,7 @@ on:
   pull_request:
     paths: ['apps/ios/**', 'api/**', 'design/**', 'tools/**', 'deny.toml', '.agents/rules/**', '.github/workflows/ios.yml']
   push:
-    branches: [main, feat/core-platform-layers]
+    branches: [main]
     paths: ['apps/ios/**', 'api/**', 'design/**', 'tools/**', 'deny.toml', '.agents/rules/**', '.github/workflows/ios.yml']
 permissions:
   contents: read
