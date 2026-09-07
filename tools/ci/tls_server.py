@@ -35,8 +35,12 @@ def tls_server():
     with tempfile.TemporaryDirectory(prefix="gauja-tls-") as temporary:
         directory = Path(temporary)
         key, cert = directory / "key.pem", directory / "cert.pem"
+        # Apple TLS trust requires serverAuth EKU: https://support.apple.com/en-us/103769
         subprocess.run(["openssl", "req", "-x509", "-newkey", "rsa:2048", "-nodes", "-days", "1",
-                        "-subj", "/CN=localhost", "-addext", "subjectAltName=DNS:localhost",
+                        "-sha256", "-subj", "/CN=localhost", "-addext", "subjectAltName=DNS:localhost",
+                        "-addext", "basicConstraints=critical,CA:FALSE",
+                        "-addext", "keyUsage=critical,digitalSignature,keyEncipherment",
+                        "-addext", "extendedKeyUsage=serverAuth",
                         "-keyout", str(key), "-out", str(cert)], check=True,
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         key.chmod(0o600)

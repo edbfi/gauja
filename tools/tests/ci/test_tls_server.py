@@ -4,6 +4,7 @@ import hashlib
 from pathlib import Path
 import socket
 import ssl
+import subprocess
 import sys
 import unittest
 from urllib.error import URLError
@@ -26,7 +27,11 @@ class TLSFixtureTests(unittest.TestCase):
             context = ssl._create_unverified_context()
             with socket.create_connection((address.hostname, address.port), timeout=5) as connection:
                 with context.wrap_socket(connection, server_hostname="localhost") as secured:
-                    actual = hashlib.sha256(secured.getpeercert(binary_form=True)).hexdigest()
+                    der = secured.getpeercert(binary_form=True)
+                    actual = hashlib.sha256(der).hexdigest()
+            extensions = subprocess.check_output(["openssl", "x509", "-inform", "DER", "-noout", "-text"], input=der).decode()
+            self.assertIn("TLS Web Server Authentication", extensions)
+            self.assertIn("CA:FALSE", extensions)
             self.assertEqual(environment["GAUJA_TLS_FINGERPRINT"], actual)
             self.assertEqual([], paths)
             with urlopen(base + "/tls", context=context, timeout=5) as response:

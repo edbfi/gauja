@@ -59,10 +59,12 @@ jobs:
       - run: python3 tools/ci/check-licenses.py ios
       - run: python3 tools/ci/replay-contract.py ios
       - run: tools/ci/egress-test.sh ios
-      - run: python3 tools/ci/hello-server.py ios
-      - name: Phone and tablet smoke
+      - name: Live server acceptance
         run: |
           xcodebuild -downloadPlatform iOS
+          python3 tools/ci/hello-server.py ios
+      - name: Phone and tablet smoke
+        run: |
           xcodes runtimes install "iOS 18.6"
           python3 tools/ci/ios-smoke.py --evidence-dir "$RUNNER_TEMP/native-ci/smoke"
       - name: Device architecture size report
