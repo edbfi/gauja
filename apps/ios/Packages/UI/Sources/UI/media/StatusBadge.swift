@@ -5,6 +5,7 @@ import Model
 import SwiftUI
 
 public struct StatusBadge: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.colorScheme) private var scheme
     private let label: LocalizedStringKey
     private let family: Family
@@ -43,7 +44,7 @@ public struct StatusBadge: View {
             if is4K { Text("4K") }
             Text(label)
         }
-        .font(.gaujaLabelMedium).foregroundStyle(colors.1)
+        .font(.gaujaLabelMedium(dynamicTypeSize)).foregroundStyle(colors.1)
         .padding(.horizontal, 8).padding(.vertical, 4)
         .background(colors.0, in: RoundedRectangle(cornerRadius: 4))
         .accessibilityElement(children: .combine)

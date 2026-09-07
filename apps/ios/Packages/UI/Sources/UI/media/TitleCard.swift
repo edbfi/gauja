@@ -5,6 +5,7 @@ import Model
 import SwiftUI
 
 public struct TitleCard: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.colorScheme) private var scheme
     private let title: TitleSummary
     private let poster: Image?
@@ -31,12 +32,14 @@ public struct TitleCard: View {
                     }.clipped()
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title.title.flatMap { $0.isEmpty ? nil : $0 } ?? String(localized: "Untitled"))
-                        .font(.gaujaTitleMedium)
-                    Text(mediaLabel).font(.gaujaBodySmall)
-                    if let year = title.year { Text(year, format: .number.grouping(.never)).font(.gaujaBodySmall) }
+                        .font(.gaujaTitleMedium(dynamicTypeSize))
+                    Text(mediaLabel).font(.gaujaBodySmall(dynamicTypeSize))
+                    if let year = title.year {
+                        Text(year, format: .number.grouping(.never)).font(.gaujaBodySmall(dynamicTypeSize))
+                    }
                     if let rating = title.rating, rating.isFinite, (0...10).contains(rating) {
                         Text("Rating: \(rating, format: .number.precision(.fractionLength(1))) out of 10").font(
-                            .gaujaBodySmall)
+                            .gaujaBodySmall(dynamicTypeSize))
                     }
                     StatusBadge(status: title.status)
                     if let status = title.status4K { StatusBadge(status: status, is4K: true) }

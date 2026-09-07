@@ -30,21 +30,33 @@ def generate(tokens, output):
     lines = [HEADER, "import SwiftUI", "", "public extension Font {"]
     styles = [HEADER, "import SwiftUI", "import UIKit", "", "public struct GaujaTypographyStyle {",
               "    public let font: Font", "    public let lineHeight: CGFloat", "    public let letterSpacing: CGFloat", "",
-              "    private init(size: CGFloat, weight: UIFont.Weight, textStyle: UIFont.TextStyle, lineHeight: CGFloat, letterSpacing: CGFloat) {",
+              "    private init(size: CGFloat, weight: UIFont.Weight, textStyle: UIFont.TextStyle, lineHeight: CGFloat, letterSpacing: CGFloat, category: DynamicTypeSize) {",
               "        let metrics = UIFontMetrics(forTextStyle: textStyle)",
-              "        font = Font(metrics.scaledFont(for: UIFont.systemFont(ofSize: size, weight: weight)))",
-              "        self.lineHeight = metrics.scaledValue(for: size * lineHeight)",
-              "        self.letterSpacing = metrics.scaledValue(for: letterSpacing)", "    }", ""]
+              "        let traits = Self.traits(for: category)",
+              "        font = Font(metrics.scaledFont(for: UIFont.systemFont(ofSize: size, weight: weight), compatibleWith: traits))",
+              "        self.lineHeight = metrics.scaledValue(for: size * lineHeight, compatibleWith: traits)",
+              "        self.letterSpacing = metrics.scaledValue(for: letterSpacing, compatibleWith: traits)", "    }", ""]
     for key, v in values.items():
         if key.startswith("typography."):
             name = key.split(".")[-1]
             style = "largeTitle" if name.startswith("display") else "title1" if name.startswith("headline") else "headline" if name.startswith("title") else "caption1" if name.startswith("label") else "body"
-            lines += [f"    static var gauja{name[0].upper() + name[1:]}: Font {{",
-                      f"        GaujaTypographyStyle.{name}.font", "    }", ""]
-            styles += [f"    public static var {name}: GaujaTypographyStyle {{",
+            lines += [f"    static func gauja{name[0].upper() + name[1:]}(_ category: DynamicTypeSize) -> Font {{",
+                      f"        GaujaTypographyStyle.{name}(category).font", "    }", ""]
+            styles += [f"    public static func {name}(_ category: DynamicTypeSize) -> GaujaTypographyStyle {{",
                        f"        GaujaTypographyStyle(size: {v['fontSize']['value']:g}, weight: .{weights[v['fontWeight']]}, textStyle: .{style},",
-                       f"            lineHeight: {v['lineHeight']:g}, letterSpacing: {v['letterSpacing']['value']:g})", "    }", ""]
+                       f"            lineHeight: {v['lineHeight']:g}, letterSpacing: {v['letterSpacing']['value']:g}, category: category)", "    }", ""]
     (output / "Font+Gauja.swift").write_text("\n".join(lines) + "}\n", encoding="utf-8")
+    styles += ["    private static func traits(for size: DynamicTypeSize) -> UITraitCollection {",
+               "        let category: UIContentSizeCategory", "        switch size {"]
+    for swiftui, uikit in [("xSmall", "extraSmall"), ("small", "small"), ("medium", "medium"),
+                           ("large", "large"), ("xLarge", "extraLarge"), ("xxLarge", "extraExtraLarge"),
+                           ("xxxLarge", "extraExtraExtraLarge"), ("accessibility1", "accessibilityMedium"),
+                           ("accessibility2", "accessibilityLarge"), ("accessibility3", "accessibilityExtraLarge"),
+                           ("accessibility4", "accessibilityExtraExtraLarge"),
+                           ("accessibility5", "accessibilityExtraExtraExtraLarge")]:
+        styles.append(f"        case .{swiftui}: category = .{uikit}")
+    styles += ["        @unknown default: category = .large", "        }",
+               "        return UITraitCollection(preferredContentSizeCategory: category)", "    }", ""]
     (output / "GaujaTypographyStyle.swift").write_text("\n".join(styles) + "}\n", encoding="utf-8")
     members = [f"    public static func {k.split('.')[-1]}(reduceMotion: Bool = false) -> Double {{ reduceMotion ? 0 : {v['value'] / 1000:g} }}" for k, v in values.items() if k.startswith("motion.")]
     (output / "GaujaMotion.swift").write_text(HEADER + "public enum GaujaMotion {\n" + "\n".join(members) + "\n}\n", encoding="utf-8")
