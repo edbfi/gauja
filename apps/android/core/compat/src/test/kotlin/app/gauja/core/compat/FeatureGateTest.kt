@@ -2,12 +2,31 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 package app.gauja.core.compat
 
+import app.gauja.core.model.servers.ServerStatus
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class FeatureGateTest {
+    @Test
+    fun supportedRangeBannerUsesTheBundledContract() {
+        val gate = FeatureGate.bundled()
+        for ((version, outside) in
+            listOf(
+                null to true,
+                "3.4.0" to true,
+                "3.4.1-beta.1" to true,
+                "3.4.1" to false,
+                "3.5.0" to false,
+            )) {
+            org.junit.Assert.assertEquals(
+                outside,
+                gate.outsideSupportedRange(ServerStatus(version, null, false, false)),
+            )
+        }
+    }
+
     @Test
     fun bundledCapabilitiesFailClosed() {
         val gate = FeatureGate.bundled()

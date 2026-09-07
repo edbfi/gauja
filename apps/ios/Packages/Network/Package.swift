@@ -9,6 +9,7 @@ let package = Package(
     products: [.library(name: "Network", targets: ["Network"])],
     dependencies: [
         .package(path: "../Model"),
+        .package(path: "../Testing"),
         .package(path: "../Persistence"),
         .package(path: "../Common"),
         .package(url: "https://github.com/apple/swift-openapi-runtime", exact: "1.12.1"),
@@ -27,7 +28,8 @@ let package = Package(
                 .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
                 .enableUpcomingFeature("InferIsolatedConformances"),
             ]),
-        .testTarget(name: "NetworkTests", dependencies: ["Network"]),
+        .testTarget(
+            name: "NetworkTests", dependencies: ["Network", .product(name: "GaujaTesting", package: "Testing")]),
     ],
     swiftLanguageModes: [.v6]
 )

@@ -10,7 +10,6 @@ let package = Package(
     dependencies: [
         .package(path: "../SeerrAPI"),
         .package(path: "../Model"),
-        .package(path: "../Testing"),
         .package(path: "../Persistence"),
         .package(path: "../Common"),
         .package(path: "../Compat"),
@@ -31,7 +30,7 @@ let package = Package(
                 .enableUpcomingFeature("InferIsolatedConformances"),
             ]),
         .testTarget(
-            name: "DataTests", dependencies: ["Data", .product(name: "GaujaTesting", package: "Testing")],
+            name: "DataTests", dependencies: ["Data"],
             swiftSettings: [.defaultIsolation(MainActor.self)]),
     ],
     swiftLanguageModes: [.v6]

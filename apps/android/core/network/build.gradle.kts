@@ -14,6 +14,7 @@ dependencies {
     implementation(libs.coil.core)
     implementation(project(":core:model"))
     testImplementation(libs.junit)
+    testImplementation(libs.robolectric)
     testImplementation(project(":core:testing"))
     testImplementation(libs.coroutines.test)
     testImplementation(libs.okhttp.mockwebserver)

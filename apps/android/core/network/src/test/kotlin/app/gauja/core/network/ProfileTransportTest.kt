@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 package app.gauja.core.network
 
+import app.gauja.core.common.AppError
+import app.gauja.core.common.AppException
 import app.gauja.core.common.Secret
 import app.gauja.core.datastore.secrets.SecretKind
 import app.gauja.core.model.ServerAddress
@@ -11,12 +13,17 @@ import app.gauja.core.model.servers.ServerProfile
 import app.gauja.core.testing.FakeClock
 import app.gauja.core.testing.MemorySecrets
 import java.util.UUID
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
 import okhttp3.Request
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -119,6 +126,44 @@ class ProfileTransportTest {
             assertNull(secrets.read(operator.id, SecretKind.SESSION_COOKIE))
             factory.delete(operator.id) {}
         }
+    }
+
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    @Test
+    fun deletionWaitsForCacheWritesAndRejectsStaleReaders() = runTest {
+        val factory =
+            ProfileTransport(
+                MemorySecrets(),
+                DeprecationStore(),
+                FakeClock(),
+                StandardTestDispatcher(testScheduler),
+            )
+        val id = ProfileId(UUID.randomUUID())
+        val entered = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        var cached = false
+        val writer = async {
+            factory.withCache(id) {
+                entered.complete(Unit)
+                release.await()
+                cached = true
+            }
+        }
+        entered.await()
+        val deletion = async { factory.delete(id) { cached = false } }
+        runCurrent()
+        assertFalse(deletion.isCompleted)
+        release.complete(Unit)
+        writer.await()
+        deletion.await()
+        assertFalse(cached)
+        val failure =
+            try {
+                factory.withCache(id) { error("A deleted profile must not be read") }
+            } catch (failure: AppException) {
+                failure
+            }
+        assertEquals(AppError.NOT_FOUND, failure.reason)
     }
 
     private fun profile(server: MockWebServer) =

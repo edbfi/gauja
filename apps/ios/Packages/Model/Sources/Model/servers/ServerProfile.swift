@@ -38,12 +38,12 @@ public enum AuthMethod: String, Sendable, Codable { case session, apiKey }
 
 public struct ServerProfile: Sendable, Equatable {
     public let id: ProfileID
-    public var displayName: String
-    public var address: ServerAddress
-    public var tlsMode: TLSMode
-    public var authMethod: AuthMethod
-    public var basicAuthUsername: String?
-    public var operatorAcknowledged: Bool
+    public let displayName: String
+    public let address: ServerAddress
+    public let tlsMode: TLSMode
+    public let authMethod: AuthMethod
+    public let basicAuthUsername: String?
+    public let operatorAcknowledged: Bool
     public var status: Cached<ServerStatus>?
     public var publicSettings: Cached<PublicSettings>?
 

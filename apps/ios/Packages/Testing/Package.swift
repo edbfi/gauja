@@ -12,7 +12,12 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "GaujaTesting", dependencies: ["Common", "Model", "Persistence", "UI", "DesignSystem"],
+            name: "GaujaTesting",
+            dependencies: [
+                "Common", "Model", "Persistence",
+                .product(name: "UI", package: "UI", condition: .when(platforms: [.iOS])),
+                .product(name: "DesignSystem", package: "DesignSystem", condition: .when(platforms: [.iOS])),
+            ],
             swiftSettings: [
                 .defaultIsolation(MainActor.self), .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
                 .enableUpcomingFeature("InferIsolatedConformances"),

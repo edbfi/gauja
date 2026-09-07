@@ -13,6 +13,7 @@ import threading
 from urllib.parse import urlsplit
 
 from local_seerr import ROOT, initialized_server
+from ios_hello import run as run_ios
 
 OPERATIONS = {
     ("POST", "/api/v1/auth/local"), ("GET", "/api/v1/auth/me"), ("POST", "/api/v1/auth/logout"),
@@ -34,11 +35,13 @@ class Scenario:
         self.requests = []
         self.offline = False
         self.violations = 0
+        self.responses = []
         self.lock = threading.Lock()
 
     def handler(self):
         scenario = self
         class Handler(BaseHTTPRequestHandler):
+            protocol_version = "HTTP/1.1"
             def log_message(self, *args):
                 pass
 
@@ -91,6 +94,8 @@ class Scenario:
                     connection.request(self.command, self.path, body=body, headers=headers)
                     response = connection.getresponse()
                     payload = response.read()
+                    with scenario.lock:
+                        scenario.responses.append((self.path, response.status, length, self.headers.get("Transfer-Encoding")))
                     self.send_response(response.status)
                     for name, value in response.getheaders():
                         if name.lower() not in {"connection", "transfer-encoding", "content-length"}:
@@ -118,9 +123,14 @@ def run(platform, base, credentials):
             if platform == "android":
                 command = [str(ROOT / "apps/android/gradlew"), "--project-dir", str(ROOT / "apps/android"),
                            ":core:data:testDebugUnitTest", "--tests", "*HelloServerTest.liveInitializedSeerrHelloServer", "--rerun", "--quiet"]
-            else:
-                command = ["swift", "test", "--package-path", str(ROOT / "apps/ios/Packages/Data"), "--filter", "liveInitializedSeerrHelloServer"]
-            subprocess.run(command, env=env, check=True)
+            try:
+                if platform == "android":
+                    subprocess.run(command, env=env, check=True)
+                else:
+                    run_ios(env)
+            except subprocess.CalledProcessError:
+                print(f"hello-server: response metadata={scenario.responses}; offline={scenario.offline}; violations={scenario.violations}")
+                raise
             scenario.verify()
         finally:
             server.shutdown()

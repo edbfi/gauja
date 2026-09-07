@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[2]
 NS = {"p": "http://maven.apache.org/POM/4.0.0"}
 NAMES = {
     "Apache 2": "Apache-2.0", "Apache 2.0": "Apache-2.0", "ASL, version 2": "Apache-2.0",
+    "Apache License 2": "Apache-2.0",
     "Apache License V2.0": "Apache-2.0", "Apache License v2.0": "Apache-2.0",
     "New BSD License": "BSD-3-Clause",
     "Bouncy Castle Licence": "MIT",
@@ -98,6 +99,24 @@ def maven_licenses(group, name, version):
     return []
 
 
+def shipping_modules(graph):
+    modules = {module["name"]: module for module in graph}
+    if ":app" not in modules:
+        raise ValueError("The resolved graph has no app module")
+    shipped = set()
+    pending = [":app"]
+    while pending:
+        name = pending.pop()
+        if name in shipped:
+            continue
+        shipped.add(name)
+        for edge in modules[name]["edges"]:
+            scope = edge["scope"].lower()
+            if "test" not in scope and "compileonly" not in scope:
+                pending.append(edge["target"])
+    return shipped
+
+
 def android(root):
     tree = root / "apps/android"
     graph = json.loads((tree / "build/reports/module-graph.json").read_text())
@@ -107,11 +126,13 @@ def android(root):
     reports = [path / "build/reports/resolved-dependencies.json" for path in [tree, tree / "build-logic", *modules]]
     if any(not path.exists() for path in reports):
         raise ValueError("Run Gradle exportResolvedDependencies for every module first")
+    shipped = {tree / name.strip(":").replace(":", "/") for name in shipping_modules(graph)}
     dependencies = {}
     for report in reports:
         for value in json.loads(report.read_text()):
             key = tuple(value[name] for name in ("group", "name", "version"))
-            dependencies[key] = "runtime" if "runtime" in (dependencies.get(key), value["scope"]) else "build"
+            scope = value["scope"] if report.parent.parent.parent in shipped else "build"
+            dependencies[key] = "runtime" if "runtime" in (dependencies.get(key), scope) else "build"
     if not dependencies:
         raise ValueError("The resolved Maven graph is empty")
     for coordinate, scope in sorted(dependencies.items()):

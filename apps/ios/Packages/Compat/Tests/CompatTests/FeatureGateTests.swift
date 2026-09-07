@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Gauja contributors
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import Foundation
+import Model
 import Testing
 
 @testable import Compat
@@ -27,4 +28,17 @@ import Testing
         data: Data(#"{"limited":{"min":"3.4.1","max":"3.5.0","endpoint":"/test","note":"test"}}"#.utf8))
     #expect(gate.isSupported("limited", version: ServerVersion("3.5.0")))
     #expect(!gate.isSupported("limited", version: ServerVersion("3.5.1")))
+}
+
+@Test func supportedRangeBannerUsesBundledContract() throws {
+    let gate = try FeatureGate.bundled()
+    let cases: [(String?, Bool)] = [
+        (nil, true), ("3.4.0", true), ("3.4.1-beta.1", true), ("3.4.1", false), ("3.5.0", false),
+    ]
+    for (version, outside) in cases {
+        #expect(
+            gate.outsideSupportedRange(
+                ServerStatus(version: version, commitTag: nil, updateAvailable: false, restartRequired: false))
+                == outside)
+    }
 }

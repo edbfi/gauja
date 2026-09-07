@@ -43,25 +43,27 @@ constructor(
     private val deleted = ConcurrentHashMap.newKeySet<ProfileId>()
 
     suspend fun <T> withProfile(profile: ServerProfile, block: suspend (OkHttpClient) -> T): T =
+        withCache(profile.id) {
+            val session = session(profile)
+            try {
+                block(session.client)
+            } finally {
+                // A cancelled request may have rotated the cookie before cancellation arrived.
+                withContext(NonCancellable) {
+                    secrets.write(profile.id, SecretKind.SESSION_COOKIE, session.jar.secret())
+                }
+            }
+        }
+
+    // Image/cache operations share deletion ordering without opening an authenticated
+    // session or rewriting secrets during an offline read.
+    suspend fun <T> withCache(profileId: ProfileId, block: suspend () -> T): T =
         withContext(io) {
             locks
-                .getOrPut(profile.id) { Mutex() }
+                .getOrPut(profileId) { Mutex() }
                 .withLock {
-                    if (profile.id in deleted) throw AppException(AppError.NOT_FOUND)
-                    val session = session(profile)
-                    try {
-                        block(session.client)
-                    } finally {
-                        // A cancelled request may have rotated the cookie before cancellation
-                        // arrived.
-                        withContext(NonCancellable) {
-                            secrets.write(
-                                profile.id,
-                                SecretKind.SESSION_COOKIE,
-                                session.jar.secret(),
-                            )
-                        }
-                    }
+                    if (profileId in deleted) throw AppException(AppError.NOT_FOUND)
+                    block()
                 }
         }
 

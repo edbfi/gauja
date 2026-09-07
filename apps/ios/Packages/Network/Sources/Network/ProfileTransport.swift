@@ -27,18 +27,29 @@ public actor ProfileTransport {
         _ profile: ServerProfile,
         operation: @Sendable (AuthenticatedTransport) async throws -> Value
     ) async throws -> Value {
-        let gate = gate(profile.id)
+        try await withCache(profile.id) {
+            let transport = try await self.session(profile)
+            let value: Value
+            do { value = try await operation(transport) } catch {
+                try await self.persist(transport, profile.id)
+                throw error
+            }
+            try await self.persist(transport, profile.id)
+            return value
+        }
+    }
+
+    // Cache reads share profile-deletion ordering without opening an API session
+    // or writing credentials when the device is offline.
+    public func withCache<Value: Sendable>(
+        _ id: ProfileID, operation: @Sendable () async throws -> Value
+    ) async throws -> Value {
+        let gate = gate(id)
         await gate.acquire()
         do {
             try Task.checkCancellation()
-            guard !deleted.contains(profile.id) else { throw AppError.notFound }
-            let transport = try await session(profile)
-            let value: Value
-            do { value = try await operation(transport) } catch {
-                try await persist(transport, profile.id)
-                throw error
-            }
-            try await persist(transport, profile.id)
+            guard !deleted.contains(id) else { throw AppError.notFound }
+            let value = try await operation()
             await gate.release()
             return value
         } catch {

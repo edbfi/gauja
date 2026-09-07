@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 package app.gauja.core.compat
 
+import app.gauja.core.model.servers.ServerStatus
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -19,6 +20,11 @@ class FeatureGate(private val metadata: Map<String, FeatureMetadata>) {
         val minimum = ServerVersion.parse(feature.min) ?: return false
         val maximum = feature.max?.let { ServerVersion.parse(it) ?: return false }
         return version != null && version >= minimum && (maximum == null || version <= maximum)
+    }
+
+    fun outsideSupportedRange(status: ServerStatus): Boolean {
+        val version = ServerVersion.parse(status.version)
+        return metadata.keys.none { isSupported(it, version) }
     }
 
     fun metadata(featureId: String): FeatureMetadata? = metadata[featureId]

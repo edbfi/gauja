@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Gauja contributors
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import Foundation
+import Model
 
 public struct FeatureMetadata: Sendable, Decodable {
     public let min: String
@@ -18,6 +19,11 @@ public struct FeatureGate: Sendable {
             throw CocoaError(.fileNoSuchFile)
         }
         return try Self(data: Data(contentsOf: url))
+    }
+
+    public func outsideSupportedRange(_ status: ServerStatus) -> Bool {
+        let version = status.version.flatMap(ServerVersion.init)
+        return !features.keys.contains { isSupported($0, version: version) }
     }
 
     public func metadata(_ featureID: String) -> FeatureMetadata? { features[featureID] }

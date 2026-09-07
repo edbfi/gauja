@@ -1,16 +1,22 @@
 // SPDX-FileCopyrightText: 2026 Gauja contributors
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import Common
+import Data
 import Foundation
 import GaujaTesting
 import Model
 import Persistence
 import Testing
 
-@testable import Data
-
 @Suite(.serialized)
 struct HelloServerTests {
+    @Test func cacheStateRenderersSupportLargestText() {
+        let states: [CachedTitleRenderer.State] = [.loading, .empty, .denied, .failed(.network)]
+        for state in states {
+            #expect(CachedTitleRenderer.render(state, largeText: true))
+        }
+    }
+
     @Test(.enabled(if: ProcessInfo.processInfo.environment["GAUJA_AUTH_SERVER"] != nil))
     func liveInitializedSeerrHelloServer() async throws {
         let base = try #require(ProcessInfo.processInfo.environment["GAUJA_AUTH_SERVER"])

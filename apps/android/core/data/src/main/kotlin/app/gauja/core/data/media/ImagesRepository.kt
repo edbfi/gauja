@@ -30,6 +30,6 @@ constructor(
         val profile =
             profiles.profiles.first().firstOrNull { it.id == profileId }
                 ?: throw AppException(AppError.NOT_FOUND)
-        transport.withProfile(profile) { images.load(profile, source, size, offline) }
+        transport.withCache(profileId) { images.load(profile, source, size, offline) }
     }
 }

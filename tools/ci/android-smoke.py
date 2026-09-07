@@ -16,7 +16,10 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[2]
 ANDROID = ROOT / "apps/android"
-EXPECTED_TEST = ("app.gauja.ServerCheckTest", "injectedProbeRendersDomainResult")
+EXPECTED_TESTS = {
+    ("app.gauja.ServerCheckTest", "injectedProbeRendersDomainResult"),
+    ("app.gauja.persistence.SecretStoreTest", "keystoreBackedSecretsRemainEncryptedAndProfileIsolated"),
+}
 NAMESPACE = "{http://schemas.android.com/apk/res/android}"
 CRITICAL = re.compile(r"hasReadColorBufferDma|Transport endpoint is not connected|"
                       r"Fatal signal[^\n]*surfaceflinger|>>> /system/bin/surfaceflinger <<<|"
@@ -52,9 +55,9 @@ def validate_results(directory):
                for key in ("failures", "errors", "skipped")):
             raise ValueError("Android suite reports failures, errors or skips")
         cases.extend(root.iter("testcase"))
-    if len(cases) != 1 or (cases[0].get("classname"), cases[0].get("name")) != EXPECTED_TEST:
-        raise ValueError("Expected exactly the real Hilt instrumentation test")
-    if any(cases[0].find(tag) is not None for tag in ("failure", "error", "skipped")):
+    if len(cases) != len(EXPECTED_TESTS) or {(case.get("classname"), case.get("name")) for case in cases} != EXPECTED_TESTS:
+        raise ValueError("Expected exactly the Hilt screen and real Keystore instrumentation tests")
+    if any(case.find(tag) is not None for case in cases for tag in ("failure", "error", "skipped")):
         raise ValueError("Hilt instrumentation did not pass")
 
 
