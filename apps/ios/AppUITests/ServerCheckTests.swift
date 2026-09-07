@@ -20,8 +20,9 @@ nonisolated final class ServerCheckTests: XCTestCase {
             address.typeText("ftp://invalid")
             let typed = XCTNSPredicateExpectation(
                 predicate: NSPredicate(format: "value == %@", "ftp://invalid"), object: address)
-            // AX snapshots can lag synthesized typing; keep validation's separate deadline unchanged.
-            guard XCTWaiter.wait(for: [typed], timeout: 3) == .completed else {
+            // Allow the same setup window as field discovery: iPad AX snapshots can lag typing.
+            // The separate three-second validation deadline below stays unchanged.
+            guard XCTWaiter.wait(for: [typed], timeout: 10) == .completed else {
                 attachState(app, address: address, button: button, error: error)
                 XCTFail("Invalid address was not entered exactly")
                 return false
