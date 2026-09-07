@@ -73,6 +73,14 @@ public actor ProfileImages {
         return image
     }
 
+    public func close() {
+        for stored in sessions.values { stored.session.invalidateAndCancel() }
+        sessions.removeAll()
+        memory.removeAllObjects()
+        costs.removeAll()
+        order.removeAll()
+    }
+
     public func clear(_ id: ProfileID) throws {
         let prefix = id.rawValue.uuidString + ":"
         for key in order.filter({ $0.hasPrefix(prefix) }) {

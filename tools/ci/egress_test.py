@@ -46,7 +46,9 @@ def exercise(platform, environment):
             def do_GET(self):
                 paths.append(self.path)
                 status = 302 if self.path == "/redirect" else 401 if self.path == "/401" else 200
-                if self.path == "/cookie":
+                if self.path == "/imageproxy/tmdb/t/p/w342/gauja-test.png":
+                    body = (ROOT / "design/assets/test/poster.png").read_bytes()
+                elif self.path == "/cookie":
                     body = self.headers.get("Cookie", "no-cookie").encode()
                 elif self.path == "/operator":
                     safe = (self.headers.get("X-Api-Key") == "synthetic-key" and
@@ -56,6 +58,7 @@ def exercise(platform, environment):
                 else:
                     body = b"cookie-leaked" if self.headers.get("Cookie") else b"no-cookie"
                 self.send_response(status)
+                self.send_header("Content-Type", "image/png" if self.path.endswith("gauja-test.png") else "text/plain")
                 self.send_header("Connection", "close")
                 self.send_header("Location", "http://localhost:1/forbidden")
                 if self.path.startswith("/session/"):
@@ -74,7 +77,7 @@ def exercise(platform, environment):
             try:
                 env = dict(os.environ, **environment, GAUJA_EGRESS_SERVER=f"http://127.0.0.1:{server.server_port}")
                 subprocess.run(["swift", "test", "--package-path", str(ROOT / "apps/ios/Packages/Network")], env=env, check=True)
-                if Counter(paths) != Counter({"/redirect": 1, "/echo": 1, "/session/a": 1, "/session/b": 1, "/cookie": 3, "/401": 1, "/operator": 2}):
+                if Counter(paths) != Counter({"/redirect": 1, "/echo": 1, "/session/a": 1, "/session/b": 1, "/cookie": 3, "/401": 1, "/operator": 2, "/imageproxy/tmdb/t/p/w342/gauja-test.png": 2}):
                     raise ValueError("Unexpected or missing transport requests")
             finally:
                 server.shutdown()

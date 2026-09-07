@@ -28,13 +28,20 @@
                     .environment(\.dynamicTypeSize, largeText ? .accessibility5 : .large)
             }
             let host = UIHostingController(rootView: content)
-            host.view.frame = CGRect(x: 0, y: 0, width: 240, height: 1600)
+            let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 240, height: 1600))
+            window.rootViewController = host
+            window.isHidden = false
+            defer {
+                window.isHidden = true
+                window.rootViewController = nil
+            }
+            host.view.frame = window.bounds
             host.view.setNeedsLayout()
             host.view.layoutIfNeeded()
             let image = UIGraphicsImageRenderer(size: host.view.bounds.size).image { _ in
                 host.view.drawHierarchy(in: host.view.bounds, afterScreenUpdates: true)
             }
-            return image.cgImage?.width == 240
+            return image.cgImage?.width == Int(host.view.bounds.width * image.scale)
         }
     }
 
