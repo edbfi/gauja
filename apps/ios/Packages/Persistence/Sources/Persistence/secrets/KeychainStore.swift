@@ -35,7 +35,8 @@ public actor KeychainStore: SecretStore {
         var result: CFTypeRef?
         let status = SecItemCopyMatching(request as CFDictionary, &result)
         if status == errSecItemNotFound { return nil }
-        guard status == errSecSuccess, let data = result as? Data else { throw AppError.unknown }
+        guard status == errSecSuccess else { throw KeychainFailure(status: status) }
+        guard let data = result as? Data else { throw AppError.unknown }
         return Secret(data)
     }
 
@@ -43,7 +44,7 @@ public actor KeychainStore: SecretStore {
         let request = query(profileID, kind)
         guard let value else {
             let status = SecItemDelete(request as CFDictionary)
-            guard status == errSecSuccess || status == errSecItemNotFound else { throw AppError.unknown }
+            guard status == errSecSuccess || status == errSecItemNotFound else { throw KeychainFailure(status: status) }
             return
         }
         try value.withBytes { bytes in
@@ -53,9 +54,10 @@ public actor KeychainStore: SecretStore {
                 var insertion = request
                 insertion[kSecValueData as String] = bytes
                 insertion[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
-                guard SecItemAdd(insertion as CFDictionary, nil) == errSecSuccess else { throw AppError.unknown }
+                let added = SecItemAdd(insertion as CFDictionary, nil)
+                guard added == errSecSuccess else { throw KeychainFailure(status: added) }
             } else if updated != errSecSuccess {
-                throw AppError.unknown
+                throw KeychainFailure(status: updated)
             }
         }
     }
@@ -63,4 +65,9 @@ public actor KeychainStore: SecretStore {
     public func clear(profileID: ProfileID) throws {
         for kind in SecretKind.allCases { try write(profileID: profileID, kind: kind, value: nil) }
     }
+}
+
+// Preserve only the system status for diagnosis, never query attributes or secret data.
+private struct KeychainFailure: Error {
+    let status: OSStatus
 }

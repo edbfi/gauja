@@ -47,8 +47,7 @@ def run(environment):
         subprocess.run(["xcrun", "simctl", "bootstatus", identifier, "-b"], check=True, timeout=180)
         destination = "platform=iOS Simulator,id=" + identifier
         subprocess.run(["xcodebuild", "-project", "Gauja.xcodeproj", "-scheme", "GaujaHello", "-destination", destination,
-                        "-derivedDataPath", "DerivedData", "-skipPackagePluginValidation", "build-for-testing",
-                        "CODE_SIGNING_ALLOWED=NO"], cwd=ios, check=True)
+                        "-derivedDataPath", "DerivedData", "-skipPackagePluginValidation", "build-for-testing"], cwd=ios, check=True)
         products = ios / "DerivedData/Build/Products"
         candidates = [file for file in products.glob("*.xctestrun") if not file.name.startswith("GaujaHello-")]
         if not candidates:

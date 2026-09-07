@@ -41,7 +41,7 @@ struct HelloServerTests {
         let profiles = ServerProfileStore(modelContainer: container)
         let users = UserCacheStore(modelContainer: container)
         let titles = TitleCacheStore(modelContainer: container)
-        let secrets = MemorySecrets()
+        let secrets = KeychainStore(service: "app.gauja.hello." + UUID().uuidString)
         let clock = FakeClock().clock
         let platform = CorePlatform(
             profiles: profiles, users: users, titles: titles, secrets: secrets,

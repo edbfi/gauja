@@ -13,6 +13,9 @@ settings:
     SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
     GENERATE_INFOPLIST_FILE: YES
     CODE_SIGNING_ALLOWED: NO
+    # Simulator Keychain access requires the app identity from local signing.
+    "CODE_SIGNING_ALLOWED[sdk=iphonesimulator*]": YES
+    "CODE_SIGN_IDENTITY[sdk=iphonesimulator*]": "-"
     OTHER_SWIFT_FLAGS: "$(inherited) -enable-upcoming-feature NonisolatedNonsendingByDefault -enable-upcoming-feature InferIsolatedConformances"
 packages:
   GaujaTesting:
