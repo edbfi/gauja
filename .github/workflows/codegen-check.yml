@@ -3,27 +3,24 @@
 name: codegen-check
 
 on:
-  pull_request:
-    paths: ['api/**', 'LICENSES/MIT.txt', 'tools/contract/**', 'tools/api-drift/**', 'tools/codegen/**', 'tools/tests/codegen/**', 'apps/android/core/api/**', 'apps/ios/Packages/SeerrAPI/**', '.github/workflows/codegen-check.yml']
-  push:
-    branches: [main]
-    paths: ['api/**', 'LICENSES/MIT.txt', 'tools/contract/**', 'tools/api-drift/**', 'tools/codegen/**', 'tools/tests/codegen/**', 'apps/android/core/api/**', 'apps/ios/Packages/SeerrAPI/**', '.github/workflows/codegen-check.yml']
+  workflow_call: {}
+  workflow_dispatch: {}
 
 permissions:
   contents: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: codegen-check-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   api-drift:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+          persist-credentials: false
+      - uses: actions/setup-python@v7.0.0
         with:
           python-version: '3.13'
       - run: tools/contract/python.sh --install
@@ -31,6 +28,12 @@ jobs:
         env:
           BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
           HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: tools/api-drift/check-local.sh --range "$BASE" "$HEAD"
+        run: |
+          if ! git rev-parse --verify --quiet "$BASE^{commit}" >/dev/null; then
+            BASE=$(git merge-base origin/main "$HEAD")
+            if [[ "$BASE" == "$HEAD" ]]; then BASE=$(git rev-parse "$HEAD^"); fi
+          fi
+          tools/api-drift/check-local.sh --range "$BASE" "$HEAD"
       - name: Verify vendored bytes at the pin
         run: tools/contract/python.sh tools/api-drift/check-upstream.py
+    timeout-minutes: 30

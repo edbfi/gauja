@@ -16,17 +16,18 @@ permissions:
 
 jobs:
   pullfrog:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       id-token: write
       contents: read
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 1
+          persist-credentials: false
       - name: Run agent
-        uses: pullfrog/pullfrog@v0
+        uses: pullfrog/pullfrog@v0.1.68
         with:
           prompt: ${{ inputs.prompt }}
         env:
@@ -34,8 +35,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          GOOGLE_GENERATIVE_AI_API_KEY:
-            ${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}
+          GOOGLE_GENERATIVE_AI_API_KEY: ${{ secrets.GOOGLE_GENERATIVE_AI_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
@@ -44,14 +44,13 @@ jobs:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           AI_GATEWAY_API_KEY: ${{ secrets.AI_GATEWAY_API_KEY }}
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
-          
+
           # for Amazon Bedrock (https://docs.pullfrog.com/bedrock)
           # AWS_BEARER_TOKEN_BEDROCK: ${{ secrets.AWS_BEARER_TOKEN_BEDROCK }}
           # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           # AWS_REGION: us-east-1
           # BEDROCK_MODEL_ID: <bedrock-model-id>
-          
           # for Google Vertex AI (https://docs.pullfrog.com/vertex)
           # VERTEX_SERVICE_ACCOUNT_JSON: >-
           #   ${{ secrets.VERTEX_SERVICE_ACCOUNT_JSON }}
@@ -77,3 +76,7 @@ jobs:
           # both limits are required — set them to the real limits of that model
           # OPENAI_COMPATIBLE_CONTEXT: "128000"
           # OPENAI_COMPATIBLE_MAX_OUTPUT: "16384"
+    timeout-minutes: 30
+concurrency:
+  group: pullfrog-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true
