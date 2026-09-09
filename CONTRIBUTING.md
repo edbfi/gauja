@@ -52,7 +52,7 @@ Files carry SPDX copyright and license information, either as headers or through
 - One module, one screen or one hook per PR where practical. Link the owning behavior contract (a file or inventory section) for UI changes; refine its applicable acceptance criteria with the feature.
 - Put meaningful behavior tests near the owning sources; do not create empty suites or require a file per type.
 - Generated code (`apps/android/core/api/`, `apps/ios/Packages/SeerrAPI/Generated/`, generated themes) is never hand-edited. Regenerate with `tools/codegen/` or `tools/tokens/`.
-- `main` is protected: squash-merge only, the PR title becomes the commit subject, and the `REUSE`, `prek`, `commit-messages`, `gitleaks`, `tool-tests` and `boundary` checks must pass.
+- `main` is protected: squash-merge only, the PR title becomes the commit subject, and the existing `REUSE`, `prek`, `commit-messages`, `gitleaks`, `tool-tests` and `boundary` checks remain required. Add `ci / required` with strict up-to-date enforcement and administrator enforcement after adoption validation. It positively requires every hygiene, native, codegen, token, and public contract lane; missing, pending, cancelled, failed, or skipped jobs cannot pass.
 - Nothing under `apps/android/` may reference `apps/ios/` or vice versa. Artifacts flow from `api/` and `design/` into the apps only.
 
 ## Building one platform without the other's toolchain
@@ -71,6 +71,35 @@ See the platform workflows for complete commands and [contract tooling](tools/co
 for independent generated-client tests. With one toolchain installed, use `SKIP=swift-format,swiftlint`
 (Android) or `SKIP=ktfmt,detekt` (iOS) for a repository-wide hook run; staged platform work
 skips the other platform naturally.
+
+## Shared automation
+
+[The CI workflow](.github/workflows/ci.yml) runs every lane for every PR, main
+push, and manual dispatch. Platform workflows remain independently dispatchable;
+the Android lane never installs Apple tools and the iOS lane never installs a
+JDK. There are no workflow-level path filters that leave required checks missing.
+The shared versioned aggregate comes from `engels74/automation`; existing
+platform commands, generated-code exclusions, deployment floors, pinned emulator
+pairings, per-ABI size reports, and native evidence artifacts are preserved.
+
+Actions use full version tags. [Renovate configuration](renovate.json) extends
+the shared default and mixed presets, restores native Gradle-wrapper and Python
+requirements discovery, and tracks the Apple CLI and OpenAPI generator pins.
+The history scanner and Java generator require archive-hash review; the Swift
+generator's manifest, pin, resolved graph, and generated output must agree.
+Compiler/plugin major upgrades require native compatibility review. Automerge
+remains off until the shared policy correction and required checks are verified.
+
+[Apple tool installation](tools/ci/install-apple-tools.sh) reads exact releases
+from its adjacent environment file instead of installing current Homebrew tools.
+The formatter still comes from the selected Xcode toolchain. Follow the printed
+PATH instructions for local checks; CI installs that PATH automatically.
+
+The existing public contract exercises status/settings against the pinned Seerr
+container. It does not claim authenticated scenario coverage, which remains
+Phase 11. Packaging/distribution remains Phase 12; no signing or store publishing
+is added. Python build tooling has its existing behavioral suites and hashed
+dependencies; broader Python formatting/type-checking coverage is still a gap.
 
 ## Reporting security issues
 

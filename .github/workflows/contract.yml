@@ -3,19 +3,20 @@
 # Initial public flow only; Phase 11 adds initialized/seeding/auth and complete operation coverage.
 name: contract
 on:
-  pull_request:
-    paths: ['api/**', 'tools/ci/public-contract.py', 'tools/codegen/**', '.github/workflows/contract.yml']
+  workflow_call: {}
+  workflow_dispatch: {}
   schedule:
-    - cron: '17 6 * * 1'
-  workflow_dispatch:
+    - cron: 17 6 * * 1
 permissions:
   contents: read
 jobs:
   public-contract:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7.0.0
         with:
           python-version: '3.13'
       - run: tools/contract/python.sh --install
@@ -29,3 +30,7 @@ jobs:
           trap 'docker rm -f gauja-contract' EXIT
           timeout 180 bash -c 'until curl --silent --fail "http://127.0.0.1:5057/api/v1/status?checkUpdateAvailable=false" >/dev/null; do sleep 2; done'
           tools/contract/python.sh tools/ci/public-contract.py --base http://127.0.0.1:5057
+    timeout-minutes: 30
+concurrency:
+  group: contract-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: true

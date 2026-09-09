@@ -7,16 +7,16 @@
 # There is one maintainer today; split the handles below as the team grows.
 
 # Root configuration and documentation: project leads
-*                       @edbpede
-docs/                   @edbpede
-.agents/                @edbpede
-.github/                @edbpede
-tools/                  @edbpede
+*                       @edbfi
+docs/                   @edbfi
+.agents/                @edbfi
+.github/                @edbfi
+tools/                  @edbfi
 
 # Shared contract: both platform maintainers
-api/                    @edbpede
-design/                 @edbpede
+api/                    @edbfi
+design/                 @edbfi
 
 # Platform trees: platform maintainers
-apps/android/           @edbpede
-apps/ios/               @edbpede
+apps/android/           @edbfi
+apps/ios/               @edbfi
