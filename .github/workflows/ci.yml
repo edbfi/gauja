@@ -165,7 +165,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: engels74/automation/actions/gate@v1.0.0
+      - uses: edbfi/automation/actions/gate@v1.0.0
         with:
           needs: ${{ toJSON(needs) }}
           required: prek reuse gitleaks commit-messages tool-tests boundary android ios codegen-check tokens-check contract
