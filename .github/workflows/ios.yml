@@ -2,22 +2,21 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 name: ios
 on:
-  pull_request:
-    paths: ['apps/ios/**', 'api/**', 'design/**', 'tools/**', 'deny.toml', '.agents/rules/**', '.github/workflows/ios.yml']
-  push:
-    branches: [main]
-    paths: ['apps/ios/**', 'api/**', 'design/**', 'tools/**', 'deny.toml', '.agents/rules/**', '.github/workflows/ios.yml']
+  workflow_call: {}
+  workflow_dispatch: {}
 permissions:
   contents: read
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ios-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
   build:
     runs-on: macos-26
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
       - name: Record runner and checkout
         env:
           PR_HEAD: ${{ github.event.pull_request.head.sha }}
@@ -31,13 +30,13 @@ jobs:
             sw_vers
             uname -m
           } > "$RUNNER_TEMP/native-ci/host.txt"
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+      - uses: actions/setup-python@v7.0.0
         with:
           python-version: '3.13'
-      - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90
+      - uses: maxim-lobanov/setup-xcode@v1.7.0
         with:
           xcode-version: '26.6'
-      - run: brew install xcodegen swiftlint xcodes
+      - run: tools/ci/install-apple-tools.sh
       - run: tools/contract/python.sh --install
       - run: python3 tools/contract/bundle-resources.py --check
       - run: tools/codegen/generate.sh --check --platform ios
@@ -70,11 +69,11 @@ jobs:
       - name: Device architecture size report
         working-directory: apps/ios
         run: |
-          xcodebuild -project Gauja.xcodeproj -scheme Gauja -configuration Release -destination 'generic/platform=iOS' -derivedDataPath DerivedData -skipPackagePluginValidation build CODE_SIGNING_ALLOWED=NO DEPLOYMENT_POSTPROCESSING=YES STRIP_INSTALLED_PRODUCT=YES
+          xcodebuild -project Gauja.xcodeproj -scheme Gauja -configuration Release -destination 'generic/platform=iOS' -derivedDataPath DerivedData -skipPackagePluginValidation -onlyUsePackageVersionsFromResolvedFile build CODE_SIGNING_ALLOWED=NO DEPLOYMENT_POSTPROCESSING=YES STRIP_INSTALLED_PRODUCT=YES
           du -sk DerivedData/Build/Products/Release-iphoneos/Gauja.app | tee "$RUNNER_TEMP/native-ci/device-size.txt"
       - name: Retain native test evidence
         if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: ios-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/native-ci

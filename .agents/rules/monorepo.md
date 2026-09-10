@@ -38,7 +38,7 @@ pins belong to the relevant manifests; prose should link to them instead of addi
 
 ## The cross-boundary rule
 
-- **Nothing under `apps/android/` references anything under `apps/ios/`, and vice versa.** No imports, no relative paths, no Gradle `includeBuild`, no SPM `path:` dependency, no symlink, no shared script. `pr-hygiene.yml` greps for the other tree's path and fails the PR.
+- **Nothing under `apps/android/` references anything under `apps/ios/`, and vice versa.** No imports, no relative paths, no Gradle `includeBuild`, no SPM `path:` dependency, no symlink, no shared script. `ci.yml` greps for the other tree's path and fails the PR.
 - **No shared runtime code.** No Kotlin Multiplatform, no shared library, no shared `common/` directory. What both apps share is the contract: `api/`, `design/`, and the generators in `tools/` that read them.
 - **Artifacts flow one way.** `api/` → generated clients and bundled compatibility metadata; `design/tokens.json` → generated themes; `design/screens/` → both apps' behaviour. Nothing flows from an app into `api/` or `design/`, and nothing flows sideways between the apps. If both apps need the same fact, it becomes part of the contract first.
 - Each app builds, tests and lints alone. A contributor with only a JDK builds Android; one with only Xcode builds iOS. A lane never installs the other platform's toolchain.
@@ -49,7 +49,7 @@ Workflow configurations own executable commands and triggers. [prek.toml](../../
 
 | Active workflow | Responsibility |
 |---|---|
-| [pr-hygiene.yml](../../.github/workflows/pr-hygiene.yml) | Hygiene hooks (including screen and API import boundaries), REUSE, history secret scan, commit/DCO checks, all tooling test suites, platform separation |
+| [ci.yml](../../.github/workflows/ci.yml) | Hygiene hooks (including screen and API import boundaries), REUSE, history secret scan, commit/DCO checks, all tooling test suites, platform separation |
 | [codegen-check.yml](../../.github/workflows/codegen-check.yml) | Contract pairing/coverage and upstream bytes |
 | [android.yml](../../.github/workflows/android.yml) | Android build, JVM/Robolectric/Hilt tests, lint, dependency/license graph, client regeneration, public fixture replay, transport egress and per-ABI size report |
 | [ios.yml](../../.github/workflows/ios.yml) | iOS build, Swift Testing/XCUITest, lint, package/license graph, client regeneration, public fixture replay, transport egress and device size report |
@@ -60,8 +60,8 @@ Local contract/theme and platform lint hooks mirror their dedicated CI owners an
 
 Planned gates: authenticated container contracts and upstream discovery in Phase 11; release/SBOM/bundled notices in Phase 12. Transfer existing checks to their replacement owner when equivalent real app checks land; retire smoke manifests and locks only after each platform independently compiles and passes serialization/redaction tests.
 
-- Every action is pinned by commit SHA; Renovate keeps the pins current.
-- Add shared inputs and tooling dependencies to every affected lane’s filters in the same PR. Each platform lane installs only its own toolchain.
+- Every action uses a full version tag under the shared Renovate policy, as selected for this rollout.
+- The top-level CI runs every required lane for every PR and main push. Platform workflows remain independently dispatchable and install only their own toolchain.
 - Preserve required checks (`REUSE`, `prek`, `commit-messages`, `gitleaks`, `tool-tests`, `boundary`); inspect repository branch protection/rulesets before removing or renaming jobs.
 - Complexity and length lints remain advisory (PRD §12.2).
 
@@ -78,5 +78,5 @@ Planned gates: authenticated container contracts and upstream discovery in Phase
 | `apps/ios/Packages/Model` reads `apps/android/core/model` fixtures | Sideways dependency | Fixtures live in `api/fixtures/` |
 | A `shared/` directory with Kotlin and Swift side by side | Runtime sharing by the back door (PRD Appendix C decision 1) | Put the fact in `api/` or `design/`; generate per platform |
 | Hand-copying a token value into a Swift theme | Drifts from `design/tokens.json` | Run `tools/tokens/`; the theme is generated |
-| `uses: actions/checkout@v7` | Unpinned; supply-chain risk (PRD §10) | `uses: actions/checkout@<sha> # v7.x.y` |
+| `uses: actions/checkout@v7` | Floating major hides individual releases | A full version tag updated by Renovate |
 | Installing Xcode in the Android lane to run a shared script | Breaks build-one-platform independence | Keep orchestration in `tools/`; token generation is bash/Python stdlib. Contract tooling may use hash-pinned YAML, JSON Schema and JSONPath dependencies in an isolated Python environment, plus the selected platform generator. These are build-time only; neither lane needs the other platform’s toolchain. |

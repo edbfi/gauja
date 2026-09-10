@@ -1,49 +1,100 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended",
-    "group:allNonMajor",
-    "helpers:pinGitHubActionDigests"
+    "github>edbfi/automation:base#v1.0.0"
   ],
-  "enabledManagers": ["github-actions", "gradle", "swift", "custom.regex"],
+  "gitIgnoredAuthors": [
+    "41898282+github-actions[bot]@users.noreply.github.com"
+  ],
   "customManagers": [
     {
       "customType": "regex",
-      "description": "gitleaks binary pinned in pr-hygiene.yml (GITLEAKS_VERSION; update the SHA256 alongside)",
-      "managerFilePatterns": ["/^\\.github/workflows/pr-hygiene\\.yml$/"],
-      "matchStrings": ["GITLEAKS_VERSION:\\s*(?<currentValue>[\\d.]+)"],
+      "description": "History scanner version and archive checksum are reviewed together.",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/ci\\.yml$/"
+      ],
+      "matchStrings": [
+        "GITLEAKS_VERSION:\\s*(?<currentValue>[\\d.]+)"
+      ],
       "depNameTemplate": "gitleaks/gitleaks",
       "datasourceTemplate": "github-releases",
       "extractVersionTemplate": "^v(?<version>.*)$"
     },
     {
       "customType": "regex",
-      "description": "Hook revisions in prek.toml",
-      "managerFilePatterns": ["/^prek\\.toml$/"],
-      "matchStrings": ["repo = \"https://github\\.com/(?<depName>[^\"]+)\"\\s*\\n\\s*rev = \"(?<currentValue>[^\"]+)\""],
-      "datasourceTemplate": "github-tags"
+      "managerFilePatterns": [
+        "/^tools/ci/apple-tools\\.env$/"
+      ],
+      "matchStrings": [
+        "# renovate: depName=(?<depName>[^\\s]+)\\s+[A-Z_]+=(?<currentValue>[0-9.]+)"
+      ],
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v?(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^tools/codegen/versions\\.env$/"
+      ],
+      "matchStrings": [
+        "(?:^|\\n)OPENAPI_GENERATOR_VERSION=(?<currentValue>[0-9.]+)"
+      ],
+      "depNameTemplate": "OpenAPITools/openapi-generator",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^tools/codegen/versions\\.env$/"
+      ],
+      "matchStrings": [
+        "(?:^|\\n)SWIFT_OPENAPI_GENERATOR_VERSION=(?<currentValue>[0-9.]+)"
+      ],
+      "depNameTemplate": "apple/swift-openapi-generator",
+      "datasourceTemplate": "github-releases"
     }
-  ],
-  "gitIgnoredAuthors": [
-    "41898282+github-actions[bot]@users.noreply.github.com",
-    "300104067+engels74-bot@users.noreply.github.com"
   ],
   "packageRules": [
     {
-      "matchUpdateTypes": ["minor", "patch"],
-      "automerge": true
-    },
-    {
-      "matchManagers": ["github-actions"],
-      "matchUpdateTypes": ["major"],
-      "automerge": true
-    },
-    {
-      "matchDepNames": ["gitleaks/gitleaks"],
+      "description": "The history scanner version and checked archive hash must change together.",
+      "matchPackageNames": [
+        "gitleaks/gitleaks"
+      ],
       "automerge": false,
+      "dependencyDashboardApproval": true,
       "groupName": "gitleaks"
+    },
+    {
+      "description": "Generated clients, mobile compiler/plugin graphs, and deployment floors require native compatibility review for major upgrades.",
+      "matchManagers": [
+        "gradle",
+        "gradle-wrapper",
+        "swift"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false,
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Keep the Swift generator manifest and validation pin together; regenerate its checked output and resolved graph.",
+      "matchPackageNames": [
+        "apple/swift-openapi-generator"
+      ],
+      "groupName": "Swift OpenAPI generator",
+      "automerge": false,
+      "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Review the Java generator archive hash and regenerate its checked output.",
+      "matchPackageNames": [
+        "OpenAPITools/openapi-generator"
+      ],
+      "groupName": "Java OpenAPI generator",
+      "automerge": false,
+      "dependencyDashboardApproval": true
     }
-  ],
-  "rebaseWhen": "conflicted",
-  "prConcurrentLimit": 10
+  ]
 }
