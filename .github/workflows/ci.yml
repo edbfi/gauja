@@ -30,7 +30,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@v7.0.0
         with:
-          python-version: "3.13"
+          python-version: "3.14"
       - uses: j178/prek-action@v3.0.0
         env:
           # Branch guard is local; codegen-check owns contract validation and
@@ -114,7 +114,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@v7.0.0
         with:
-          python-version: "3.13"
+          python-version: "3.14"
       - run: tools/contract/python.sh --install
       - run: tools/tests/run.sh
 
