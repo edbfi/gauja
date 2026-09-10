@@ -9,7 +9,7 @@
 
     import UIKit
 
-    public enum CachedTitleRenderer {
+    public final class CachedTitleRenderer {
         public enum State {
             case loading, empty, denied
             case failed(AppError)
@@ -26,20 +26,31 @@
             return host.sizeThatFits(in: CGSize(width: 220, height: CGFloat.greatestFiniteMagnitude)).height
         }
 
-        public static func render(_ state: State, largeText: Bool = false, poster: CGImage? = nil) -> Bool {
-            let content = GaujaTheme {
-                CachedTitleContent(state: state, poster: poster).frame(width: 220)
-                    .environment(\.dynamicTypeSize, largeText ? .accessibility5 : .large)
-            }
-            let host = UIHostingController(rootView: content)
+        private let host: UIHostingController<RendererContent>
+        private let window: UIWindow
+
+        public init(_ state: State, largeText: Bool = false, poster: CGImage? = nil) {
+            host = UIHostingController(rootView: RendererContent(state: state, largeText: largeText, poster: poster))
             host.traitOverrides.preferredContentSizeCategory = largeText ? .accessibilityExtraExtraExtraLarge : .large
-            let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 240, height: 1600))
+            window = UIWindow(frame: CGRect(x: 0, y: 0, width: 240, height: 1600))
             window.rootViewController = host
             window.isHidden = false
-            defer {
-                window.isHidden = true
-                window.rootViewController = nil
-            }
+        }
+
+        public func close() {
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+
+        public static func render(_ state: State, largeText: Bool = false, poster: CGImage? = nil) -> Bool {
+            let renderer = CachedTitleRenderer(state, largeText: largeText, poster: poster)
+            defer { renderer.close() }
+            return renderer.draw(state, largeText: largeText, poster: poster)
+        }
+
+        public func draw(_ state: State, largeText: Bool = false, poster: CGImage? = nil) -> Bool {
+            host.rootView = RendererContent(state: state, largeText: largeText, poster: poster)
+            host.traitOverrides.preferredContentSizeCategory = largeText ? .accessibilityExtraExtraExtraLarge : .large
             host.view.frame = window.bounds
             host.view.setNeedsLayout()
             host.view.layoutIfNeeded()
@@ -48,6 +59,19 @@
                 rendered = host.view.drawHierarchy(in: host.view.bounds, afterScreenUpdates: true)
             }
             return rendered && image.cgImage?.width == Int(host.view.bounds.width * image.scale)
+        }
+    }
+
+    private struct RendererContent: View {
+        let state: CachedTitleRenderer.State
+        var largeText = false
+        var poster: CGImage?
+
+        var body: some View {
+            GaujaTheme {
+                CachedTitleContent(state: state, poster: poster).frame(width: 220)
+                    .environment(\.dynamicTypeSize, largeText ? .accessibility5 : .large)
+            }
         }
     }
 
