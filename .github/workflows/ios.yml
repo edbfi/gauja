@@ -32,7 +32,7 @@ jobs:
           } > "$RUNNER_TEMP/native-ci/host.txt"
       - uses: actions/setup-python@v7.0.0
         with:
-          python-version: '3.13'
+          python-version: '3.14'
       - uses: maxim-lobanov/setup-xcode@v1.7.0
         with:
           xcode-version: '26.6'
