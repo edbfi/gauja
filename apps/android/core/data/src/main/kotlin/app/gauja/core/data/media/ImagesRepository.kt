@@ -27,9 +27,11 @@ constructor(
         size: PosterSize,
         offline: Boolean,
     ): Image = safeApi {
-        val profile =
-            profiles.profiles.first().firstOrNull { it.id == profileId }
-                ?: throw AppException(AppError.NOT_FOUND)
-        transport.withCache(profileId) { images.load(profile, source, size, offline) }
+        transport.withCache(profileId) {
+            val profile =
+                profiles.profiles.first().firstOrNull { it.id == profileId }
+                    ?: throw AppException(AppError.NOT_FOUND)
+            images.load(profile, source, size, offline)
+        }
     }
 }

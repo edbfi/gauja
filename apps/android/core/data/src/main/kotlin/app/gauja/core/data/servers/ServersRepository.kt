@@ -25,6 +25,7 @@ import javax.inject.Inject
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 interface ServersRepository {
@@ -52,7 +53,21 @@ constructor(
 ) : ServersRepository {
     override val profiles = store.profiles.map { it.toImmutableList() }
 
-    override suspend fun save(profile: ServerProfile) = safeApi { store.save(profile) }
+    override suspend fun save(profile: ServerProfile) = safeApi {
+        transport.withCache(profile.id) {
+            val old = store.profiles.first().firstOrNull { it.id == profile.id }
+            val updated =
+                if (old != null && old.address.origin != profile.address.origin) {
+                    transport.clearCredentials(old)
+                    secrets.clear(profile.id)
+                    users.clear(profile.id.value.toString())
+                    titles.clear(profile.id.value.toString())
+                    images.clear(profile.id)
+                    profile.copy(status = null, publicSettings = null)
+                } else profile
+            store.save(updated)
+        }
+    }
 
     override suspend fun refresh(profileId: ProfileId) {
         sessions.use(profileId) { profile, retrofit ->

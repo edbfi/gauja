@@ -27,10 +27,13 @@ constructor(
 ) {
     suspend fun <T> use(id: ProfileId, operation: suspend (ServerProfile, Retrofit) -> T): T =
         safeApi {
-            val profile =
-                profiles.profiles.first().firstOrNull { it.id == id }
-                    ?: throw AppException(AppError.NOT_FOUND)
-            transport.withProfile(profile) { client ->
+            transport.withProfile(
+                id,
+                {
+                    profiles.profiles.first().firstOrNull { it.id == id }
+                        ?: throw AppException(AppError.NOT_FOUND)
+                },
+            ) { profile, client ->
                 operation(
                     profile,
                     Retrofit.Builder()

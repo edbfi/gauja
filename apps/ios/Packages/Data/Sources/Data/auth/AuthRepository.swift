@@ -32,7 +32,7 @@ struct LiveAuthRepository: AuthRepository {
                 try await cacheUser(client, id)
             } catch {
                 transport.clearCookie()
-                try await sessions.transport.clearCredentials(id)
+                try await sessions.transport.clearCredentials(profile)
                 try await users.clear(id)
                 throw error
             }
@@ -49,7 +49,7 @@ struct LiveAuthRepository: AuthRepository {
     }
 
     func logout(_ id: ProfileID) async throws {
-        try await sessions.use(id) { _, client, transport in
+        try await sessions.use(id) { profile, client, transport in
             do {
                 switch try await client.postAuthLogout() {
                 case .ok: break
@@ -57,12 +57,12 @@ struct LiveAuthRepository: AuthRepository {
                 }
             } catch {
                 transport.clearCookie()
-                try await sessions.transport.clearCredentials(id)
+                try await sessions.transport.clearCredentials(profile)
                 try await users.clear(id)
                 throw error
             }
             transport.clearCookie()
-            try await sessions.transport.clearCredentials(id)
+            try await sessions.transport.clearCredentials(profile)
             try await users.clear(id)
         }
     }

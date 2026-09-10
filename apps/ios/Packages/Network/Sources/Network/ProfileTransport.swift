@@ -27,14 +27,28 @@ public actor ProfileTransport {
         _ profile: ServerProfile,
         operation: @Sendable (AuthenticatedTransport) async throws -> Value
     ) async throws -> Value {
-        try await withCache(profile.id) {
+        try await withProfile(
+            profile.id, resolve: { profile },
+            operation: { _, transport in
+                try await operation(transport)
+            })
+    }
+
+    public func withProfile<Value: Sendable>(
+        _ id: ProfileID,
+        resolve: @Sendable () async throws -> ServerProfile,
+        operation: @Sendable (ServerProfile, AuthenticatedTransport) async throws -> Value
+    ) async throws -> Value {
+        try await withCache(id) {
+            let profile = try await resolve()
+            guard profile.id == id else { throw AppError.validation }
             let transport = try await self.session(profile)
             let value: Value
-            do { value = try await operation(transport) } catch {
-                try await self.persist(transport, profile.id)
+            do { value = try await operation(profile, transport) } catch {
+                try await self.persist(transport)
                 throw error
             }
-            try await self.persist(transport, profile.id)
+            try await self.persist(transport)
             return value
         }
     }
@@ -74,11 +88,12 @@ public actor ProfileTransport {
         }
     }
 
-    public func clearCredentials(_ id: ProfileID) async throws {
+    public func clearCredentials(_ profile: ServerProfile) async throws {
+        let id = profile.id
         sessions[id]?.clearCookie()
-        try await secrets.write(profileID: id, kind: .sessionCookie, value: nil)
-        try await secrets.write(profileID: id, kind: .apiKey, value: nil)
-        try await secrets.write(profileID: id, kind: .plexToken, value: nil)
+        try await secrets.write(profile: profile, kind: .sessionCookie, value: nil)
+        try await secrets.write(profile: profile, kind: .apiKey, value: nil)
+        try await secrets.write(profile: profile, kind: .plexToken, value: nil)
         sessions.removeValue(forKey: id)?.close()
     }
 
@@ -94,11 +109,11 @@ public actor ProfileTransport {
         sessions.removeValue(forKey: profile.id)?.close()
         let cookie =
             profile.authMethod == .session
-            ? try await secrets.read(profileID: profile.id, kind: .sessionCookie) : nil
+            ? try await secrets.read(profile: profile, kind: .sessionCookie) : nil
         let apiKey =
             profile.authMethod == .apiKey
-            ? try await secrets.read(profileID: profile.id, kind: .apiKey) : nil
-        let password = try await secrets.read(profileID: profile.id, kind: .basicAuthPassword)
+            ? try await secrets.read(profile: profile, kind: .apiKey) : nil
+        let password = try await secrets.read(profile: profile, kind: .basicAuthPassword)
         let transport = AuthenticatedTransport(
             profile: profile, cookie: cookie, apiKey: apiKey, basicPassword: password,
             clock: clock, diagnostics: diagnostics)
@@ -106,8 +121,8 @@ public actor ProfileTransport {
         return transport
     }
 
-    private func persist(_ transport: AuthenticatedTransport, _ id: ProfileID) async throws {
-        try await secrets.write(profileID: id, kind: .sessionCookie, value: transport.savedCookie())
+    private func persist(_ transport: AuthenticatedTransport) async throws {
+        try await secrets.write(profile: transport.profile, kind: .sessionCookie, value: transport.savedCookie())
     }
 }
 

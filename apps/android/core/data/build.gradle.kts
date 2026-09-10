@@ -26,6 +26,7 @@ dependencies {
     testImplementation(libs.robolectric)
     testImplementation(libs.compose.test)
     testImplementation(libs.compose.foundation)
+    testImplementation(libs.datastore.preferences)
     testImplementation(libs.sqlite)
     testImplementation(libs.room.runtime)
     testImplementation(libs.turbine)

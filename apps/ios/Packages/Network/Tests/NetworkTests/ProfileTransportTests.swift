@@ -25,18 +25,18 @@ func profileCookiesRestoreAndOperatorNeverSendsThem() async throws {
     let reopened = ProfileTransport(secrets: secrets, clock: clock, diagnostics: DeprecationStore())
     #expect(try await response(reopened, first, "/cookie") == "connect.sid=a")
     _ = try await response(reopened, first, "/401")
-    #expect(await secrets.read(profileID: first.id, kind: .sessionCookie) == nil)
+    #expect(await secrets.read(profile: first, kind: .sessionCookie) == nil)
     #expect(try await response(factory, second, "/cookie") == "connect.sid=b")
     let operatorProfile = try #require(
         ServerProfile(
             id: ProfileID(rawValue: UUID()), displayName: "Operator", address: address,
             authMethod: .apiKey, basicAuthUsername: "operator", operatorAcknowledged: true))
-    await secrets.write(profileID: operatorProfile.id, kind: .apiKey, value: Secret(Data("synthetic-key".utf8)))
+    await secrets.write(profile: operatorProfile, kind: .apiKey, value: Secret(Data("synthetic-key".utf8)))
     await secrets.write(
-        profileID: operatorProfile.id, kind: .basicAuthPassword, value: Secret(Data("synthetic-password".utf8)))
+        profile: operatorProfile, kind: .basicAuthPassword, value: Secret(Data("synthetic-password".utf8)))
     #expect(try await response(factory, operatorProfile, "/operator") == "operator-safe")
     #expect(try await response(factory, operatorProfile, "/operator") == "operator-safe")
-    #expect(await secrets.read(profileID: operatorProfile.id, kind: .sessionCookie) == nil)
+    #expect(await secrets.read(profile: operatorProfile, kind: .sessionCookie) == nil)
     try await factory.delete(first.id) {}
     try await factory.delete(second.id) {}
     try await factory.delete(operatorProfile.id) {}
@@ -80,4 +80,30 @@ func tlsRequiresBothConfirmedFingerprintAndMatchingHostname() async throws {
         }
         try await factory.delete(profile.id) {}
     }
+}
+
+@Test(.enabled(if: ProcessInfo.processInfo.environment["GAUJA_EGRESS_SERVER"] != nil))
+func changingOriginDoesNotReuseStoredCredentials() async throws {
+    let base = try #require(ProcessInfo.processInfo.environment["GAUJA_EGRESS_SERVER"])
+    let id = ProfileID(rawValue: UUID())
+    let firstAddress = try #require(ServerAddress(base))
+    let secondAddress = try #require(ServerAddress(base.replacingOccurrences(of: "127.0.0.1", with: "localhost")))
+    let original = try #require(
+        ServerProfile(
+            id: id, displayName: "Original", address: firstAddress, authMethod: .apiKey, basicAuthUsername: "operator",
+            operatorAcknowledged: true))
+    let changed = try #require(
+        ServerProfile(
+            id: id, displayName: "Changed", address: secondAddress, authMethod: .apiKey, basicAuthUsername: "operator",
+            operatorAcknowledged: true))
+    let secrets = MemorySecrets()
+    await secrets.write(profile: original, kind: .apiKey, value: Secret(Data("synthetic-key".utf8)))
+    await secrets.write(profile: original, kind: .basicAuthPassword, value: Secret(Data("synthetic-password".utf8)))
+    let factory = ProfileTransport(secrets: secrets, clock: .system, diagnostics: DeprecationStore())
+    #expect(try await response(factory, original, "/operator") == "operator-safe")
+    #expect(try await response(factory, changed, "/credentials") == "no-credentials")
+    let restarted = ProfileTransport(secrets: secrets, clock: .system, diagnostics: DeprecationStore())
+    #expect(try await response(restarted, changed, "/credentials") == "no-credentials")
+    try await restarted.delete(id) {}
+    try await factory.delete(id) {}
 }

@@ -17,13 +17,18 @@ struct APISession: Sendable {
         operation: @Sendable (ServerProfile, Client, AuthenticatedTransport) async throws -> Value
     ) async throws -> Value {
         do {
-            guard let profile = try await profiles.profiles().first(where: { $0.id == id }) else {
-                throw AppError.notFound
-            }
-            return try await transport.withProfile(profile) { transport in
-                try await operation(
-                    profile, Client(serverURL: profile.address.apiBase, transport: transport), transport)
-            }
+            return try await transport.withProfile(
+                id,
+                resolve: {
+                    guard let profile = try await profiles.profiles().first(where: { $0.id == id }) else {
+                        throw AppError.notFound
+                    }
+                    return profile
+                },
+                operation: { profile, transport in
+                    try await operation(
+                        profile, Client(serverURL: profile.address.apiBase, transport: transport), transport)
+                })
         } catch {
             if Task.isCancelled { throw CancellationError() }
             throw appError(error)

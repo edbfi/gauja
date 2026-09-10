@@ -7,7 +7,9 @@ import androidx.test.platform.app.InstrumentationRegistry
 import app.gauja.core.common.Secret
 import app.gauja.core.datastore.secrets.SecretKind
 import app.gauja.core.datastore.secrets.SecretStore
+import app.gauja.core.model.ServerAddress
 import app.gauja.core.model.servers.ProfileId
+import app.gauja.core.model.servers.ServerProfile
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import java.util.UUID
@@ -29,8 +31,18 @@ class SecretStoreTest {
     @Test
     fun keystoreBackedSecretsRemainEncryptedAndProfileIsolated() = runBlocking {
         hilt.inject()
-        val first = ProfileId(UUID.randomUUID())
-        val second = ProfileId(UUID.randomUUID())
+        val first =
+            ServerProfile(
+                ProfileId(UUID.randomUUID()),
+                "first",
+                requireNotNull(ServerAddress.parse("https://first.example")),
+            )
+        val second =
+            ServerProfile(
+                ProfileId(UUID.randomUUID()),
+                "second",
+                requireNotNull(ServerAddress.parse("https://second.example")),
+            )
         try {
             for (kind in SecretKind.entries) {
                 store.write(first, kind, Secret("synthetic-first-credential".toByteArray()))
@@ -39,7 +51,7 @@ class SecretStoreTest {
             val context = InstrumentationRegistry.getInstrumentation().targetContext
             val bytes = context.noBackupFilesDir.resolve("datastore/secrets.pb").readBytes()
             assertFalse(bytes.toString(Charsets.ISO_8859_1).contains("synthetic-"))
-            store.clear(first)
+            store.clear(first.id)
             for (kind in SecretKind.entries) {
                 assertNull(store.read(first, kind))
                 assertEquals(
@@ -48,8 +60,8 @@ class SecretStoreTest {
                 )
             }
         } finally {
-            store.clear(first)
-            store.clear(second)
+            store.clear(first.id)
+            store.clear(second.id)
         }
     }
 }

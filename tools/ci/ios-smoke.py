@@ -26,7 +26,8 @@ def select_runtimes(runtimes):
 
 EXPECTED = {
     "Gauja": {"appDoesNotRegisterBackgroundWorkOrThirdPartyQueries", "testAddressValidation",
-              "rootNavigatorKeepsItsBoundPathAndDoesNotPopPastRoot", "secretsSurviveReopeningAndWipeOnlyTheirProfile"},
+              "rootNavigatorKeepsItsBoundPathAndDoesNotPopPastRoot", "secretsSurviveReopeningAndWipeOnlyTheirProfile",
+              "originsRemainBoundAfterReopeningAndLegacySecretsAreNotAdopted"},
     "Servers": {"invalidAddressDoesNotStartRequest"},
 }
 

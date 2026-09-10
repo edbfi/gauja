@@ -5,11 +5,13 @@ import Model
 import Persistence
 
 public actor MemorySecrets: SecretStore {
-    private var values: [ProfileID: [SecretKind: Secret]] = [:]
+    private var values: [ProfileID: [String: [SecretKind: Secret]]] = [:]
     public init() {}
-    public func read(profileID: ProfileID, kind: SecretKind) -> Secret? { values[profileID]?[kind] }
-    public func write(profileID: ProfileID, kind: SecretKind, value: Secret?) {
-        values[profileID, default: [:]][kind] = value
+    public func read(profile: ServerProfile, kind: SecretKind) -> Secret? {
+        values[profile.id]?[profile.address.origin]?[kind]
+    }
+    public func write(profile: ServerProfile, kind: SecretKind, value: Secret?) {
+        values[profile.id, default: [:]][profile.address.origin, default: [:]][kind] = value
     }
     public func clear(profileID: ProfileID) { values[profileID] = nil }
 }

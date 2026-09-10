@@ -59,7 +59,7 @@ constructor(
             } finally {
                 if (!completed)
                     withContext(NonCancellable) {
-                        transport.clearSession(profileId)
+                        transport.clearSession(profile)
                         users.clear(profileId.value.toString())
                     }
             }
@@ -79,12 +79,12 @@ constructor(
     }
 
     override suspend fun logout(profileId: ProfileId) {
-        sessions.use(profileId) { _, retrofit ->
+        sessions.use(profileId) { profile, retrofit ->
             try {
                 retrofit.create(AuthApi::class.java).postAuthLogout().checked()
             } finally {
                 withContext(NonCancellable) {
-                    transport.clearCredentials(profileId)
+                    transport.clearCredentials(profile)
                     users.clear(profileId.value.toString())
                 }
             }

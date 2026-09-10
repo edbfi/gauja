@@ -43,14 +43,23 @@ constructor(
     private val deleted = ConcurrentHashMap.newKeySet<ProfileId>()
 
     suspend fun <T> withProfile(profile: ServerProfile, block: suspend (OkHttpClient) -> T): T =
-        withCache(profile.id) {
+        withProfile(profile.id, { profile }) { _, client -> block(client) }
+
+    suspend fun <T> withProfile(
+        id: ProfileId,
+        resolve: suspend () -> ServerProfile,
+        block: suspend (ServerProfile, OkHttpClient) -> T,
+    ): T =
+        withCache(id) {
+            val profile = resolve()
+            require(profile.id == id)
             val session = session(profile)
             try {
-                block(session.client)
+                block(profile, session.client)
             } finally {
                 // A cancelled request may have rotated the cookie before cancellation arrived.
                 withContext(NonCancellable) {
-                    secrets.write(profile.id, SecretKind.SESSION_COOKIE, session.jar.secret())
+                    secrets.write(profile, SecretKind.SESSION_COOKIE, session.jar.secret())
                 }
             }
         }
@@ -82,16 +91,16 @@ constructor(
 
     // Called inside withProfile so cookie clearing and persistent clearing are one ordered
     // operation.
-    suspend fun clearSession(profileId: ProfileId) {
-        sessions[profileId]?.jar?.clear()
-        secrets.write(profileId, SecretKind.SESSION_COOKIE, null)
+    suspend fun clearSession(profile: ServerProfile) {
+        sessions[profile.id]?.jar?.clear()
+        secrets.write(profile, SecretKind.SESSION_COOKIE, null)
     }
 
-    suspend fun clearCredentials(profileId: ProfileId) {
-        clearSession(profileId)
-        secrets.write(profileId, SecretKind.API_KEY, null)
-        secrets.write(profileId, SecretKind.PLEX_TOKEN, null)
-        close(profileId)
+    suspend fun clearCredentials(profile: ServerProfile) {
+        clearSession(profile)
+        secrets.write(profile, SecretKind.API_KEY, null)
+        secrets.write(profile, SecretKind.PLEX_TOKEN, null)
+        close(profile.id)
     }
 
     private suspend fun session(profile: ServerProfile): Session {
@@ -102,15 +111,14 @@ constructor(
         val origin = profile.address.value.toHttpUrl()
         val jar = ProfileCookies(origin, clock, profile.authMethod == AuthMethod.SESSION)
         if (profile.authMethod == AuthMethod.SESSION) {
-            secrets.read(profile.id, SecretKind.SESSION_COOKIE)?.useBytes { bytes ->
+            secrets.read(profile, SecretKind.SESSION_COOKIE)?.useBytes { bytes ->
                 Cookie.parse(origin, bytes.toString(Charsets.UTF_8))?.let { jar.restore(it) }
             }
         }
         val apiKey =
-            if (profile.authMethod == AuthMethod.API_KEY)
-                secrets.read(profile.id, SecretKind.API_KEY)
+            if (profile.authMethod == AuthMethod.API_KEY) secrets.read(profile, SecretKind.API_KEY)
             else null
-        val basicPassword = secrets.read(profile.id, SecretKind.BASIC_AUTH_PASSWORD)
+        val basicPassword = secrets.read(profile, SecretKind.BASIC_AUTH_PASSWORD)
         val builder =
             OkHttpClient.Builder()
                 .cookieJar(jar)

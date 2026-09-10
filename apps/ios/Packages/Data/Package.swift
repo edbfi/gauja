@@ -14,6 +14,7 @@ let package = Package(
         .package(path: "../Common"),
         .package(path: "../Compat"),
         .package(path: "../Network"),
+        .package(path: "../Testing"),
         .package(url: "https://github.com/pointfreeco/swift-dependencies", exact: "1.17.1"),
         .package(url: "https://github.com/apple/swift-openapi-runtime", exact: "1.12.1"),
     ],
@@ -30,7 +31,7 @@ let package = Package(
                 .enableUpcomingFeature("InferIsolatedConformances"),
             ]),
         .testTarget(
-            name: "DataTests", dependencies: ["Data"],
+            name: "DataTests", dependencies: ["Data", .product(name: "GaujaTesting", package: "Testing")],
             swiftSettings: [.defaultIsolation(MainActor.self)]),
     ],
     swiftLanguageModes: [.v6]

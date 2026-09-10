@@ -5,6 +5,7 @@ package app.gauja.core.datastore.secrets
 import androidx.datastore.core.DataStore
 import app.gauja.core.common.Secret
 import app.gauja.core.model.servers.ProfileId
+import app.gauja.core.model.servers.ServerProfile
 import javax.inject.Inject
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.Serializable
@@ -17,15 +18,21 @@ enum class SecretKind {
 }
 
 interface SecretStore {
-    suspend fun read(profileId: ProfileId, kind: SecretKind): Secret?
+    suspend fun read(profile: ServerProfile, kind: SecretKind): Secret?
 
-    suspend fun write(profileId: ProfileId, kind: SecretKind, value: Secret?)
+    suspend fun write(profile: ServerProfile, kind: SecretKind, value: Secret?)
 
     suspend fun clear(profileId: ProfileId)
 }
 
 @Serializable
-internal data class SecretRecord(val profileId: String, val kind: String, val bytes: ByteArray) {
+internal data class SecretRecord(
+    val profileId: String,
+    val kind: String,
+    val bytes: ByteArray,
+    // Appended for protobuf compatibility. Unbound legacy records are never read.
+    val origin: String? = null,
+) {
     override fun toString(): String = "[REDACTED]"
 }
 
@@ -37,21 +44,32 @@ internal data class SecretDocument(val records: List<SecretRecord> = emptyList()
 internal class EncryptedSecretStore
 @Inject
 constructor(private val store: DataStore<SecretDocument>) : SecretStore {
-    override suspend fun read(profileId: ProfileId, kind: SecretKind): Secret? =
+    override suspend fun read(profile: ServerProfile, kind: SecretKind): Secret? =
         store.data
             .first()
             .records
-            .firstOrNull { it.profileId == profileId.value.toString() && it.kind == kind.name }
+            .firstOrNull {
+                it.profileId == profile.id.value.toString() &&
+                    it.kind == kind.name &&
+                    it.origin == profile.address.origin
+            }
             ?.let { Secret(it.bytes) }
 
-    override suspend fun write(profileId: ProfileId, kind: SecretKind, value: Secret?) {
+    override suspend fun write(profile: ServerProfile, kind: SecretKind, value: Secret?) {
         store.updateData { document ->
             val remaining =
                 document.records.filterNot {
-                    it.profileId == profileId.value.toString() && it.kind == kind.name
+                    it.profileId == profile.id.value.toString() && it.kind == kind.name
                 }
             val record =
-                value?.useBytes { SecretRecord(profileId.value.toString(), kind.name, it.copyOf()) }
+                value?.useBytes {
+                    SecretRecord(
+                        profile.id.value.toString(),
+                        kind.name,
+                        it.copyOf(),
+                        profile.address.origin,
+                    )
+                }
             SecretDocument(if (record == null) remaining else remaining + record)
         }
     }

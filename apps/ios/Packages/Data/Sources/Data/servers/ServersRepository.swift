@@ -23,7 +23,22 @@ struct LiveServersRepository: ServersRepository {
     let images: ProfileImages
 
     func observe() async -> AsyncThrowingStream<[ServerProfile], Error> { await sessions.profiles.observe() }
-    func save(_ profile: ServerProfile) async throws { try await sessions.profiles.save(profile) }
+    func save(_ profile: ServerProfile) async throws {
+        try await sessions.transport.withCache(profile.id) {
+            let old = try await sessions.profiles.profiles().first { $0.id == profile.id }
+            var updated = profile
+            if let old, old.address.origin != profile.address.origin {
+                try await sessions.transport.clearCredentials(old)
+                try await secrets.clear(profileID: profile.id)
+                try await users.clear(profile.id)
+                try await titles.clear(profile.id)
+                try await images.clear(profile.id)
+                updated.status = nil
+                updated.publicSettings = nil
+            }
+            try await sessions.profiles.save(updated)
+        }
+    }
 
     func refresh(_ id: ProfileID) async throws {
         try await sessions.use(id) { profile, client, _ in

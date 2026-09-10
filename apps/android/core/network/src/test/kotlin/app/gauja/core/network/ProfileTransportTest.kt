@@ -45,7 +45,7 @@ class ProfileTransportTest {
             factory.withProfile(first) {
                 it.newCall(Request.Builder().url(server.url("/")).build()).execute().close()
             }
-            assertTrue(secrets.read(first.id, SecretKind.SESSION_COOKIE) != null)
+            assertTrue(secrets.read(first, SecretKind.SESSION_COOKIE) != null)
             server.enqueue(MockResponse.Builder().build())
             factory.withProfile(second) {
                 it.newCall(Request.Builder().url(server.url("/")).build()).execute().close()
@@ -59,7 +59,7 @@ class ProfileTransportTest {
                 it.newCall(Request.Builder().url(server.url("/")).build()).execute().close()
             }
             assertEquals("connect.sid=first", server.takeRequest().headers["Cookie"])
-            assertNull(secrets.read(first.id, SecretKind.SESSION_COOKIE))
+            assertNull(secrets.read(first, SecretKind.SESSION_COOKIE))
             factory.delete(first.id) {}
             factory.delete(second.id) {}
             reopened.delete(first.id) {}
@@ -78,14 +78,14 @@ class ProfileTransportTest {
                         operatorAcknowledged = true,
                         basicAuthUsername = "operator",
                     )
-            secrets.write(operator.id, SecretKind.API_KEY, Secret("synthetic-key".toByteArray()))
+            secrets.write(operator, SecretKind.API_KEY, Secret("synthetic-key".toByteArray()))
             secrets.write(
-                operator.id,
+                operator,
                 SecretKind.BASIC_AUTH_PASSWORD,
                 Secret("synthetic-password".toByteArray()),
             )
             secrets.write(
-                operator.id,
+                operator,
                 SecretKind.SESSION_COOKIE,
                 Secret("connect.sid=must-not-send; Path=/".toByteArray()),
             )
@@ -123,7 +123,7 @@ class ProfileTransportTest {
                 client.newCall(Request.Builder().url(server.url("/")).build()).execute().close()
             }
             assertNull(server.takeRequest().headers["Cookie"])
-            assertNull(secrets.read(operator.id, SecretKind.SESSION_COOKIE))
+            assertNull(secrets.read(operator, SecretKind.SESSION_COOKIE))
             factory.delete(operator.id) {}
         }
     }

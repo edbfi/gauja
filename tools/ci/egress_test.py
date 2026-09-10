@@ -50,6 +50,9 @@ def exercise(platform, environment):
                     body = (ROOT / "design/assets/test/poster.png").read_bytes()
                 elif self.path == "/cookie":
                     body = self.headers.get("Cookie", "no-cookie").encode()
+                elif self.path == "/credentials":
+                    body = b"credentials-present" if any(self.headers.get(name) for name in
+                        ("X-Api-Key", "Authorization", "Cookie", "X-API-User")) else b"no-credentials"
                 elif self.path == "/operator":
                     safe = (self.headers.get("X-Api-Key") == "synthetic-key" and
                             self.headers.get("Authorization", "").startswith("Basic ") and
@@ -77,7 +80,7 @@ def exercise(platform, environment):
             try:
                 env = dict(os.environ, **environment, GAUJA_EGRESS_SERVER=f"http://127.0.0.1:{server.server_port}")
                 subprocess.run(["swift", "test", "--package-path", str(ROOT / "apps/ios/Packages/Network")], env=env, check=True)
-                if Counter(paths) != Counter({"/redirect": 1, "/echo": 1, "/session/a": 1, "/session/b": 1, "/cookie": 3, "/401": 1, "/operator": 2, "/imageproxy/tmdb/t/p/w342/gauja-test.png": 2}):
+                if Counter(paths) != Counter({"/redirect": 1, "/echo": 1, "/session/a": 1, "/session/b": 1, "/cookie": 3, "/401": 1, "/operator": 3, "/credentials": 2, "/imageproxy/tmdb/t/p/w342/gauja-test.png": 2}):
                     raise ValueError("Unexpected or missing transport requests")
             finally:
                 server.shutdown()

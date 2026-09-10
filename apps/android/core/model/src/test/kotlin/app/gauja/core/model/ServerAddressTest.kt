@@ -34,4 +34,18 @@ class ServerAddressTest {
         assertFalse(address.isPlainHttp)
         assertEquals("[SERVER]", address.toString())
     }
+
+    @Test
+    fun credentialOriginsUseSchemeHostAndEffectivePort() {
+        val base = requireNotNull(ServerAddress.parse("https://example.test"))
+        assertEquals(base.origin, ServerAddress.parse("https://EXAMPLE.test:443/path")?.origin)
+        for (input in
+            listOf("http://example.test", "https://other.test", "https://example.test:444")) {
+            org.junit.Assert.assertNotEquals(base.origin, ServerAddress.parse(input)?.origin)
+        }
+        assertEquals(
+            ServerAddress.parse("http://[::1]/one")?.origin,
+            ServerAddress.parse("http://[::1]:80/two")?.origin,
+        )
+    }
 }

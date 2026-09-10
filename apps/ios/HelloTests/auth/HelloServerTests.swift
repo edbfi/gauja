@@ -60,7 +60,7 @@ struct HelloServerTests {
         let user = try #require(try await users.read(profile.id))
         #expect(user.value.email == email)
         #expect(user.fetchedAt == clock.now())
-        #expect(try await secrets.read(profileID: profile.id, kind: .sessionCookie) != nil)
+        #expect(try await secrets.read(profile: profile, kind: .sessionCookie) != nil)
         let titleID = try #require(TMDBID(rawValue: 42))
         let title = TitleSummary(
             id: titleID, mediaType: .movie, title: "Synthetic cached title", year: 2026,
@@ -86,6 +86,6 @@ struct HelloServerTests {
         #expect(CachedTitleRenderer.render(.offline(cached), largeText: true))
         try await platform.servers.delete(profile.id)
         #expect(try await users.read(profile.id) == nil)
-        #expect(try await secrets.read(profileID: profile.id, kind: .sessionCookie) == nil)
+        #expect(try await secrets.read(profile: profile, kind: .sessionCookie) == nil)
     }
 }

@@ -13,13 +13,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 
 class MemorySecrets : SecretStore {
-    private val values = ConcurrentHashMap<Pair<ProfileId, SecretKind>, Secret>()
+    private val values = ConcurrentHashMap<Triple<ProfileId, String, SecretKind>, Secret>()
 
-    override suspend fun read(profileId: ProfileId, kind: SecretKind): Secret? =
-        values[profileId to kind]
+    override suspend fun read(profile: ServerProfile, kind: SecretKind): Secret? =
+        values[Triple(profile.id, profile.address.origin, kind)]
 
-    override suspend fun write(profileId: ProfileId, kind: SecretKind, value: Secret?) {
-        if (value == null) values.remove(profileId to kind) else values[profileId to kind] = value
+    override suspend fun write(profile: ServerProfile, kind: SecretKind, value: Secret?) {
+        if (value == null) values.remove(Triple(profile.id, profile.address.origin, kind))
+        else values[Triple(profile.id, profile.address.origin, kind)] = value
     }
 
     override suspend fun clear(profileId: ProfileId) {
