@@ -57,6 +57,16 @@
   ],
   "packageRules": [
     {
+      "description": "Compose Rules 0.5+ requires Detekt 2 alpha; retain the stable Detekt 1.23.8-compatible line until a coordinated migration.",
+      "matchPackageNames": ["io.nlopez.compose.rules:detekt"],
+      "allowedVersions": "<0.5.0"
+    },
+    {
+      "description": "Kotlin 2.4.20 and dependency-analysis 3.19.1 support AGP through 9.3.1; review these tools together before raising the ceiling.",
+      "matchPackageNames": ["com.android.application", "com.android.library", "com.android.tools.build:gradle"],
+      "allowedVersions": "<=9.3.1"
+    },
+    {
       "description": "The history scanner version and checked archive hash must change together.",
       "matchPackageNames": [
         "gitleaks/gitleaks"

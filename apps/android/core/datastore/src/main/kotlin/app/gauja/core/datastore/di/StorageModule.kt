@@ -100,6 +100,8 @@ internal object StorageModule {
     ): DataStore<Preferences> =
         PreferenceDataStoreFactory.create(
             scope = scope,
-            produceFile = { File(context.noBackupFilesDir, "datastore/preferences.preferences_pb") },
+            produceFile = {
+                File(context.noBackupFilesDir, "datastore/preferences.preferences_pb")
+            },
         )
 }

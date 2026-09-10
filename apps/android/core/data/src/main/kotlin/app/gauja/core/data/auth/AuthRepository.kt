@@ -49,8 +49,9 @@ constructor(
             val api = retrofit.create(AuthApi::class.java)
             var completed = false
             try {
-                val input =
-                    password.useBytes { PostAuthLocalRequest(email, it.toString(Charsets.UTF_8)) }
+                val input = password.useBytes {
+                    PostAuthLocalRequest(email, it.toString(Charsets.UTF_8))
+                }
                 api.postAuthLocal(input).checked()
                 users.upsert(
                     Cached(api.getAuthMe().checked().domain(), clock.instant()).entity(profileId)

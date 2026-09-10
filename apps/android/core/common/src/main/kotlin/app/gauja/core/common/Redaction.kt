@@ -10,11 +10,10 @@ object Redaction {
     ): String {
         var safe = value
         for (secret in secrets) {
-            safe =
-                secret.useBytes { bytes ->
-                    val token = bytes.toString(Charsets.UTF_8)
-                    if (token.isEmpty()) safe else safe.replace(token, "[REDACTED]")
-                }
+            safe = secret.useBytes { bytes ->
+                val token = bytes.toString(Charsets.UTF_8)
+                if (token.isEmpty()) safe else safe.replace(token, "[REDACTED]")
+            }
         }
         for (host in hosts.filter(String::isNotEmpty).sortedByDescending(String::length)) {
             safe = safe.replace(host, "[HOST]", ignoreCase = true)
