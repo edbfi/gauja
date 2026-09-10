@@ -14,7 +14,7 @@ let package = Package(
         .package(path: "../Common"),
         .package(url: "https://github.com/apple/swift-openapi-runtime", exact: "1.12.1"),
         .package(url: "https://github.com/apple/swift-openapi-urlsession", exact: "1.3.1"),
-        .package(url: "https://github.com/apple/swift-http-types", exact: "1.4.0"),
+        .package(url: "https://github.com/apple/swift-http-types", exact: "1.8.0"),
     ],
     targets: [
         .target(
