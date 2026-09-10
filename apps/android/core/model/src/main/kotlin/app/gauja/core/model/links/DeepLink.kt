@@ -51,14 +51,13 @@ fun parseDeepLink(raw: String, profiles: List<ServerProfile>): DeepLink? {
         candidates = profiles.filter { it.id == id }.map { it.id }
         route = parts[1]
     } else {
-        val matching =
-            profiles.filter {
-                val base = URI(it.address.value)
-                url.scheme == base.scheme &&
-                    url.host == base.host &&
-                    url.port == base.port &&
-                    path.startsWith(base.path + "/")
-            }
+        val matching = profiles.filter {
+            val base = URI(it.address.value)
+            url.scheme == base.scheme &&
+                url.host == base.host &&
+                url.port == base.port &&
+                path.startsWith(base.path + "/")
+        }
         if (matching.isEmpty()) return null
         val prefix = matching.maxOf { URI(it.address.value).path.length }
         candidates = matching.filter { URI(it.address.value).path.length == prefix }.map { it.id }

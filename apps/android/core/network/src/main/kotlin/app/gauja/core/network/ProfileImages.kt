@@ -120,11 +120,10 @@ class ProfileImages @Inject constructor(@ApplicationContext private val context:
         val origin = profile.address.value.toHttpUrl()
         val server = imageClient(profile, true)
         val external = imageClient(profile, false)
-        val routing =
-            Call.Factory { request ->
-                if (sameOrigin(request.url, origin)) server.newCall(request)
-                else external.newCall(request)
-            }
+        val routing = Call.Factory { request ->
+            if (sameOrigin(request.url, origin)) server.newCall(request)
+            else external.newCall(request)
+        }
         val imageLoader =
             ImageLoader.Builder(context)
                 .memoryCache(loaderMemory)

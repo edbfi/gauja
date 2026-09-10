@@ -61,15 +61,14 @@ constructor(private val store: DataStore<SecretDocument>) : SecretStore {
                 document.records.filterNot {
                     it.profileId == profile.id.value.toString() && it.kind == kind.name
                 }
-            val record =
-                value?.useBytes {
-                    SecretRecord(
-                        profile.id.value.toString(),
-                        kind.name,
-                        it.copyOf(),
-                        profile.address.origin,
-                    )
-                }
+            val record = value?.useBytes {
+                SecretRecord(
+                    profile.id.value.toString(),
+                    kind.name,
+                    it.copyOf(),
+                    profile.address.origin,
+                )
+            }
             SecretDocument(if (record == null) remaining else remaining + record)
         }
     }

@@ -53,19 +53,18 @@ constructor(private val savedState: SavedStateHandle, private val probe: ServerP
         }
         val identity = ++generation
         mutable.value = mutable.value.copy(checking = true, error = null)
-        attempt =
-            viewModelScope.launch {
-                try {
-                    val snapshot = probe.check(address)
-                    if (generation == identity)
-                        mutable.value = mutable.value.copy(checking = false, snapshot = snapshot)
-                } catch (error: CancellationException) {
-                    throw error
-                } catch (error: ProbeException) {
-                    if (generation == identity)
-                        mutable.value = mutable.value.copy(checking = false, error = error.reason)
-                }
+        attempt = viewModelScope.launch {
+            try {
+                val snapshot = probe.check(address)
+                if (generation == identity)
+                    mutable.value = mutable.value.copy(checking = false, snapshot = snapshot)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: ProbeException) {
+                if (generation == identity)
+                    mutable.value = mutable.value.copy(checking = false, error = error.reason)
             }
+        }
     }
 
     fun foreground() {
