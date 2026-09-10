@@ -145,3 +145,17 @@ fun leak() { Log.d(TAG, '(' + tag,
     apiKey) }
 KT
 assert_exit 1 "a Kotlin char literal parenthesis does not count" "$script" "$TEST_TMP/apps"
+
+rm "$src/CharLiteral.kt"
+assert_exit 0 "prior negative samples are removed" "$script" "$TEST_TMP/apps"
+
+cat > "$src/ConcreteSecretLeak.kt" <<'KT'
+fun leak() { Log.e("test", "store=${EncryptedSecretStore} value=${Secret}") }
+KT
+assert_exit 1 "concrete encrypted-store and opaque-secret names fail" "$script" "$TEST_TMP/apps"
+rm "$src/ConcreteSecretLeak.kt"
+cat > "$ios/ConcreteSecretLeak.swift" <<'SWIFT'
+func leak() { print("store=\(KeychainStore) password=\(basicPassword)") }
+SWIFT
+assert_exit 1 "concrete Keychain and transport-secret names fail" "$script" "$TEST_TMP/apps"
+rm "$ios/ConcreteSecretLeak.swift"

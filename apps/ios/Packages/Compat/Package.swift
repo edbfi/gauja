@@ -13,6 +13,7 @@ let package = Package(
     targets: [
         .target(
             name: "Compat", dependencies: ["Model"],
+            resources: [.copy("Resources/compat.json")],
             swiftSettings: [
                 .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
                 .enableUpcomingFeature("InferIsolatedConformances"),

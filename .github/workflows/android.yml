@@ -44,13 +44,15 @@ jobs:
           echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
       - run: sdkmanager 'platforms;android-37.0'
       - run: tools/contract/python.sh --install
+      - run: python3 tools/contract/bundle-resources.py --check
       - run: tools/codegen/generate.sh --check --platform android
-      - run: apps/android/gradlew --project-dir apps/android assembleDebug assembleRelease testDebugUnitTest :core:api:test :core:model:test :core:compat:test :core:network:test detekt ktfmtCheck lint buildHealth exportResolvedDependencies
+      - run: apps/android/gradlew --project-dir apps/android assembleDebug assembleRelease testDebugUnitTest :core:api:test :core:model:test :core:common:test :core:compat:test :core:network:testDebugUnitTest detekt ktfmtCheck lint buildHealth exportResolvedDependencies
       - run: tools/ci/check-module-graph.sh
       - run: python3 tools/ci/check-api-boundary.py
       - run: python3 tools/ci/check-licenses.py android
       - run: python3 tools/ci/replay-contract.py android
       - run: tools/ci/egress-test.sh android
+      - run: python3 tools/ci/hello-server.py android
       - name: Per-ABI release APK sizes
         run: ls -l apps/android/app/build/outputs/apk/release/*.apk
       - name: Retain Android build evidence

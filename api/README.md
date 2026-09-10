@@ -40,3 +40,22 @@ Before committing, scrub credentials to `REDACTED` and run `tools/ci/check-fixtu
 Both platforms consume these files from the shared contract. Decode failures become evidence for an overlay; they are never solved by editing the recording or weakening a mapper. Replay source-backed overlays against the container as their consumers land; Phase 11 must cover every retained overlay. Synthetic serialization tests now live in each app’s API module; generator-transform tests remain in `tools/tests/codegen/`.
 
 Re-record the initial public scenario with `tools/contract/python.sh tools/ci/public-contract.py --base http://127.0.0.1:5057 --record`. The container must use the pinned upstream Dockerfile. `recording.json` stores the request/status/header provenance separately; instance identifiers are scrubbed. Each app lane replays these responses through its real Data client with `python3 tools/ci/replay-contract.py android|ios`. `contract.yml` validates the live public responses and sunset headers; the complete initialized/seeded audit remains Phase 11.
+
+The initialized local-auth fixtures use `tools/ci/seed-local-auth.cjs` against an empty pinned
+upstream database, followed by `tools/contract/python.sh tools/ci/local-auth-contract.py
+--base http://127.0.0.1:5057 --credentials <ignored-local-json> --initialize --record`.
+The credential file contains synthetic `email` and `password` fields and must have mode 0600.
+The seed uses Seerr's own password hashing; the initialization call is harness-only and never
+ships in either app. `recording-auth.json` records response provenance without session values.
+The scoped auth-local and User overlays capture the observed minimal login response and
+nullable Plex username; generated clients must decode those recordings unchanged.
+
+Run `python3 tools/ci/hello-server.py android|ios` for the native Phase 4 acceptance flow.
+The harness starts a disposable server from the pinned upstream source (Docker on Linux,
+the upstream-pinned Node runtime on macOS), initializes synthetic local users, and runs the
+platform test. An optional `--base` and `--credentials` pair reuses an initialized localhost
+instance. The native repository signs in, fetches `/auth/me`, and persists its domain value.
+The test explicitly seeds its title and uses `design/assets/test/poster.png`; neither is
+presented as a recorded media response. After cache fill, the harness rejects and counts
+all HTTP requests while the test measures cached title/artwork rendering against 300 ms.
+The harness fails if login, user fetch, artwork fetch, or the offline checkpoint did not run.

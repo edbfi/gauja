@@ -13,7 +13,7 @@ from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools/contract"))
-from jsonschema import Draft4Validator
+from responses import validate_response
 from validate import load_contract
 
 OPERATIONS = [("public", "getStatus", "/status", "?checkUpdateAvailable=false"),
@@ -56,8 +56,7 @@ def main():
             headers = {key.lower(): response.headers[key] for key in ("Content-Type", "Deprecation", "Sunset", "Link") if response.headers[key]}
             check_sunset(headers.get("sunset"), now)
             body = json.load(response)
-            pointer = "#/paths/" + path.replace("/", "~1") + "/get/responses/200/content/application~1json/schema"
-            Draft4Validator(dict(spec, **{"$ref": pointer})).validate(body)
+            validate_response(spec, path, "GET", 200, body)
             if operation == "getStatus" and body.get("version") != "3.4.1":
                 raise ValueError("Container is not the supported baseline")
             if operation == "getSettingsPublic" and body.get("initialized") is not False:

@@ -5,8 +5,8 @@ package app.gauja.core.data.servers
 import app.gauja.core.common.ProbeError
 import app.gauja.core.common.ProbeException
 import app.gauja.core.model.Compatibility
-import app.gauja.core.model.MediaServerType
 import app.gauja.core.model.ServerAddress
+import app.gauja.core.model.status.MediaServerType
 import app.gauja.core.network.ProbeTransport
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.runTest
@@ -37,7 +37,7 @@ class LiveServerProbeTest {
             val snapshot =
                 probe.check(requireNotNull(ServerAddress.parse(server.url("/seerr").toString())))
             assertEquals("Library", snapshot.title)
-            assertEquals(MediaServerType.UNKNOWN, snapshot.mediaServerType)
+            assertEquals(MediaServerType.Unrecognized(999), snapshot.mediaServerType)
             assertEquals(
                 "/seerr/api/v1/status?checkUpdateAvailable=false",
                 server.takeRequest().target,

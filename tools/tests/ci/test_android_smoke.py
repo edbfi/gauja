@@ -18,6 +18,8 @@ APP = '<manifest xmlns:android="http://schemas.android.com/apk/res/android" pack
 TEST = '<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="app.gauja.test"><instrumentation android:name="app.gauja.HiltTestRunner" android:targetPackage="app.gauja"/></manifest>'
 CASE = '<testcase classname="app.gauja.ServerCheckTest" name="injectedProbeRendersDomainResult">{}</testcase>'
 
+SECRET_CASE = '<testcase classname="app.gauja.persistence.SecretStoreTest" name="keystoreBackedSecretsRemainEncryptedAndProfileIsolated">{}</testcase>'
+
 
 class AndroidSmokeTests(unittest.TestCase):
     def setUp(self):
@@ -30,8 +32,12 @@ class AndroidSmokeTests(unittest.TestCase):
 
     def test_requires_exact_successful_hilt_body(self):
         path = self.directory / "TEST-result.xml"
-        path.write_text('<testsuite tests="1">' + CASE.format("") + '</testsuite>')
+        path.write_text('<testsuite tests="2">' + CASE.format("") + SECRET_CASE.format("") + '</testsuite>')
         smoke.validate_results(self.directory)
+        for secret in ("", SECRET_CASE.format('<skipped/>'), SECRET_CASE.format('<failure/>')):
+            path.write_text('<testsuite tests="2">' + CASE.format("") + secret + '</testsuite>')
+            with self.assertRaises(ValueError):
+                smoke.validate_results(self.directory)
         for body in ("", CASE.format('<skipped/>'), CASE.format('<failure/>'), CASE.format('<error/>'),
                      CASE.format("").replace("injectedProbeRendersDomainResult", "anotherTest"), CASE.format("") * 2):
             with self.subTest(body=body):

@@ -8,14 +8,7 @@ func mapServer(
     _ address: ServerAddress, _ status: Operations.getStatus.Output.Ok.Body.jsonPayload,
     _ settings: Components.Schemas.PublicSettings
 ) -> ServerSnapshot {
-    let mediaServerType: MediaServerType
-    switch settings.mediaServerType {
-    case 1: mediaServerType = .plex
-    case 2: mediaServerType = .jellyfin
-    case 3: mediaServerType = .emby
-    case 4: mediaServerType = .notConfigured
-    default: mediaServerType = .unknown
-    }
+    let mediaServerType = MediaServerType(rawValue: settings.mediaServerType.flatMap { Int(exactly: $0) })
     return ServerSnapshot(
         address: address, version: status.version, title: settings.applicationTitle,
         initialized: settings.initialized, restartRequired: status.restartRequired,

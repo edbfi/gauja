@@ -2,4 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 plugins { id("gauja.jvm") }
 
-dependencies { implementation(libs.inject) }
+dependencies {
+    implementation(libs.inject)
+    testImplementation(libs.junit)
+}

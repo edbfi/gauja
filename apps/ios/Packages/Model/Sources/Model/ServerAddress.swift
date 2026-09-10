@@ -8,6 +8,11 @@ public struct ServerAddress: Sendable, Equatable, Hashable, CustomStringConverti
     public var isPlainHTTP: Bool { url.scheme == "http" }
     public var apiBase: URL { url.appending(path: "api/v1") }
 
+    // Validated URLs always have a scheme and host. Paths do not change credential scope.
+    public var origin: String {
+        "\(url.scheme ?? "")://\(url.host() ?? ""):\(url.port ?? (isPlainHTTP ? 80 : 443))"
+    }
+
     public init?(_ input: String) {
         let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !text.contains(where: { $0.isWhitespace || $0 == "\\" }) else { return nil }

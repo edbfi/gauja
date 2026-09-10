@@ -3,11 +3,14 @@
 import importlib.util
 from pathlib import Path
 import tempfile
+import sys
 import unittest
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "ci"))
 spec = importlib.util.spec_from_file_location("egress", Path(__file__).resolve().parents[2] / "ci/egress_test.py")
 egress = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(egress)
+sys.path.pop(0)
 
 class EgressTests(unittest.TestCase):
     def test_missing_skipped_and_failing_tests_fail(self):

@@ -4,16 +4,17 @@ import SwiftUI
 
 public struct GaujaTheme<Content: View>: View {
     private let content: Content
-    private let scheme: ColorScheme
+    @Environment(\.colorScheme) private var systemScheme
+    private let scheme: ColorScheme?
 
-    public init(scheme: ColorScheme = .dark, @ViewBuilder content: () -> Content) {
+    public init(scheme: ColorScheme? = .dark, @ViewBuilder content: () -> Content) {
         self.scheme = scheme
         self.content = content()
     }
 
     public var body: some View {
-        content.tint(.gaujaPrimary(scheme))
-            .background(Color.gaujaBackground(scheme))
+        content.tint(.gaujaPrimary(scheme ?? systemScheme))
+            .background(Color.gaujaBackground(scheme ?? systemScheme))
             .preferredColorScheme(scheme)
     }
 }

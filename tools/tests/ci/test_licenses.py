@@ -14,6 +14,21 @@ class LicenseTests(unittest.TestCase):
     def setUp(self):
         self.policy = {"allow": ["MIT", "Apache-2.0"], "allow-build-only": ["EPL-1.0"]}
 
+    def test_test_support_runtime_is_build_only_unless_app_reaches_it(self):
+        graph = [
+            {"name": ":app", "edges": [{"target": ":core:data", "scope": "implementation"}, {"target": ":core:testing", "scope": "testImplementation"}]},
+            {"name": ":core:data", "edges": []},
+            {"name": ":core:testing", "edges": []},
+        ]
+        self.assertEqual({":app", ":core:data"}, licenses.shipping_modules(graph))
+        graph[0]["edges"][1]["scope"] = "implementation"
+        self.assertIn(":core:testing", licenses.shipping_modules(graph))
+        with self.assertRaises(ValueError):
+            licenses.shipping_modules([])
+
+    def test_known_apache_spelling_is_normalized(self):
+        self.assertEqual("Apache-2.0", licenses.NAMES["Apache License 2"])
+
     def test_unknown_and_denied_fail_closed(self):
         for values in ([], ["UNKNOWN"], ["GPL-2.0-only"], ["MIT", "Proprietary"]):
             self.assertFalse(licenses.accepted(values, "runtime", self.policy))

@@ -25,7 +25,9 @@ def select_runtimes(runtimes):
 
 
 EXPECTED = {
-    "Gauja": {"appDoesNotRegisterBackgroundWorkOrThirdPartyQueries", "testAddressValidation"},
+    "Gauja": {"appDoesNotRegisterBackgroundWorkOrThirdPartyQueries", "testAddressValidation",
+              "rootNavigatorKeepsItsBoundPathAndDoesNotPopPastRoot", "secretsSurviveReopeningAndWipeOnlyTheirProfile",
+              "originsRemainBoundAfterReopeningAndLegacySecretsAreNotAdopted"},
     "Servers": {"invalidAddressDoesNotStartRequest"},
 }
 
@@ -110,8 +112,6 @@ class Smoke:
         command += ["-scheme", scheme, "-destination", "platform=iOS Simulator,id=" + identifier,
                     "-resultBundlePath", str(bundle), "-skipPackagePluginValidation",
                     "-parallel-testing-enabled", "NO", "test"]
-        if scheme == "Gauja":
-            command += ["CODE_SIGNING_ALLOWED=NO"]
         cwd = ROOT / "apps/ios" if scheme == "Gauja" else ROOT / "apps/ios/Packages/Features/Servers"
         try:
             self.command(command, cwd=cwd, timeout=25 * 60, name=bundle.stem + "-xcodebuild.log")

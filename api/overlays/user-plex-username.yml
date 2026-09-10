@@ -1,0 +1,12 @@
+# SPDX-FileCopyrightText: 2026 Gauja contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Seerr v3.4.1 auth/me returns plexUsername: null for the recorded local user.
+# Evidence: https://github.com/seerr-team/seerr/blob/69f73a6f1486fdb51b8ddae9a94a8dfb629f461c/server/entity/User.ts#L65-L66
+overlay: 1.0.0
+info:
+  title: Local users have no Plex username
+  version: 1.0.0
+actions:
+- target: $.components.schemas.User.properties.plexUsername
+  update:
+    nullable: true

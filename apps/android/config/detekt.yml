@@ -16,6 +16,9 @@ style:
   MagicNumber:
     active: false
 Compose:
+  CompositionLocalAllowlist:
+    # Semantic status colors follow the selected generated theme across content components.
+    allowedCompositionLocals: [LocalGaujaDarkTheme]
   ComposableNaming:
     active: true
   ComposableParamOrder:
