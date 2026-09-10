@@ -75,15 +75,19 @@ struct HelloServerTests {
         #expect((response as? HTTPURLResponse)?.statusCode == 204)
         // Framework startup is separate from read-through in an already interactive app.
         #expect(CachedTitleRenderer.render(.offline(Cached(title, fetchedAt: clock.now()))))
+        let renderer = CachedTitleRenderer(.loading)
+        defer { renderer.close() }
+        #expect(renderer.draw(.loading))
+        // Include cache reads and the loading-to-content redraw; keep window lifecycle outside the budget.
         let timer = ContinuousClock()
         let start = timer.now
         let poster = try await platform.images.load(profile.id, source: "/gauja-test.png", size: .medium, offline: true)
         let cached = try #require(try await titles.read(profileID: profile.id, mediaType: "movie", tmdbID: 42))
-        #expect(CachedTitleRenderer.render(.offline(cached), poster: poster))
+        #expect(renderer.draw(.offline(cached), poster: poster))
         let elapsed = start.duration(to: timer.now)
         print("cached-render-duration=\(elapsed)")
         #expect(elapsed <= .milliseconds(300))
-        #expect(CachedTitleRenderer.render(.offline(cached), largeText: true))
+        #expect(renderer.draw(.offline(cached), largeText: true))
         try await platform.servers.delete(profile.id)
         #expect(try await users.read(profile.id) == nil)
         #expect(try await secrets.read(profile: profile, kind: .sessionCookie) == nil)
