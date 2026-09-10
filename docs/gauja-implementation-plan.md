@@ -316,64 +316,64 @@ apps/ios/
 
 ### 4.1 `core/model` / `Model`
 
-- [ ] Domain enums ported from Seerr's `server/constants/`: `MediaStatus` (UNKNOWN=1, PENDING=2, PROCESSING=3, PARTIALLY_AVAILABLE=4, AVAILABLE=5, BLOCKLISTED=6, DELETED=7), `MediaRequestStatus` (PENDING=1, APPROVED=2, DECLINED=3, FAILED=4, COMPLETED=5), `MediaType` (movie, tv), `IssueType` (VIDEO=1, AUDIO=2, SUBTITLES=3, OTHER=4), `IssueStatus` (OPEN=1, RESOLVED=2), `MediaServerType` (PLEX=1, JELLYFIN=2, EMBY=3, NOT_CONFIGURED=4), `DiscoverSliderType` (21 members, 1-based). Every `when`/`switch` over these has an explicit unknown branch because upstream adds values.
-- [ ] `Permission` as a 30-flag bitmask matching `server/lib/permissions.ts` exactly (ADMIN=2, MANAGE_SETTINGS=4, MANAGE_USERS=8, MANAGE_REQUESTS=16, REQUEST=32, VOTE=64, AUTO_APPROVE=128, AUTO_APPROVE_MOVIE=256, AUTO_APPROVE_TV=512, REQUEST_4K=1024, REQUEST_4K_MOVIE=2048, REQUEST_4K_TV=4096, REQUEST_ADVANCED=8192, REQUEST_VIEW=16384, AUTO_APPROVE_4K=32768, AUTO_APPROVE_4K_MOVIE=65536, AUTO_APPROVE_4K_TV=131072, REQUEST_MOVIE=262144, REQUEST_TV=524288, MANAGE_ISSUES=1048576, VIEW_ISSUES=2097152, CREATE_ISSUES=4194304, AUTO_REQUEST=8388608, AUTO_REQUEST_MOVIE=16777216, AUTO_REQUEST_TV=33554432, RECENT_VIEW=67108864, WATCHLIST_VIEW=134217728, MANAGE_BLOCKLIST=268435456, VIEW_BLOCKLIST=1073741824; bit 29 unused).
-- [ ] `hasPermission(required, user, mode = and|or)` with the upstream semantics (ADMIN short-circuits true; empty requirement is true); table-driven tests generated from the same table on both platforms.
+- [x] Domain enums ported from Seerr's `server/constants/`: `MediaStatus` (UNKNOWN=1, PENDING=2, PROCESSING=3, PARTIALLY_AVAILABLE=4, AVAILABLE=5, BLOCKLISTED=6, DELETED=7), `MediaRequestStatus` (PENDING=1, APPROVED=2, DECLINED=3, FAILED=4, COMPLETED=5), `MediaType` (movie, tv), `IssueType` (VIDEO=1, AUDIO=2, SUBTITLES=3, OTHER=4), `IssueStatus` (OPEN=1, RESOLVED=2), `MediaServerType` (PLEX=1, JELLYFIN=2, EMBY=3, NOT_CONFIGURED=4), `DiscoverSliderType` (21 members, 1-based). Every `when`/`switch` over these has an explicit unknown branch because upstream adds values.
+- [x] `Permission` as a bitmask with 29 nonzero flags plus `NONE=0` matching `server/lib/permissions.ts` exactly (ADMIN=2, MANAGE_SETTINGS=4, MANAGE_USERS=8, MANAGE_REQUESTS=16, REQUEST=32, VOTE=64, AUTO_APPROVE=128, AUTO_APPROVE_MOVIE=256, AUTO_APPROVE_TV=512, REQUEST_4K=1024, REQUEST_4K_MOVIE=2048, REQUEST_4K_TV=4096, REQUEST_ADVANCED=8192, REQUEST_VIEW=16384, AUTO_APPROVE_4K=32768, AUTO_APPROVE_4K_MOVIE=65536, AUTO_APPROVE_4K_TV=131072, REQUEST_MOVIE=262144, REQUEST_TV=524288, MANAGE_ISSUES=1048576, VIEW_ISSUES=2097152, CREATE_ISSUES=4194304, AUTO_REQUEST=8388608, AUTO_REQUEST_MOVIE=16777216, AUTO_REQUEST_TV=33554432, RECENT_VIEW=67108864, WATCHLIST_VIEW=134217728, MANAGE_BLOCKLIST=268435456, VIEW_BLOCKLIST=1073741824; bit 29 unused).
+- [x] `hasPermission(required, user, mode = and|or)` with the upstream semantics (ADMIN short-circuits true; scalar zero and empty AND arrays are true; empty OR arrays are false for non-admin users); table-driven tests generated from the same table on both platforms.
 - [ ] Aggregates: `ServerProfile`, `ServerStatus`, `PublicSettings`, `User`, `UserQuota`, `MediaInfo`, `Movie`, `TvShow`, `Season`, `Episode`, `Person`, `Collection`, `MediaRequest`, `Issue`, `IssueComment`, `WatchlistItem`, `DiscoverSlider`, plus a `Page<T>` wrapper. Group related value types by cohesive responsibility; add aggregates with consumers.
 
 ### 4.2 `core/common` / `Common`
 
-- [ ] `AppResult<T>` / `Result` conventions and the `AppError` taxonomy (network, tls, auth, permission, notFound, validation, serverVersion, offline, unknown) with user-facing message keys.
-- [ ] Dispatcher qualifiers (`@Dispatcher(IO)`, `@Dispatcher(Default)`) on Android; `DependencyValues` keys (`swift-dependencies`) on iOS; injectable `Clock`.
-- [ ] Redaction helpers for diagnostics export (hosts, cookies, keys) — the only place that may touch secret values for output.
+- [x] `AppResult<T>` / `Result` conventions and the `AppError` taxonomy (network, tls, auth, permission, notFound, validation, serverVersion, offline, unknown) with user-facing message keys.
+- [x] Dispatcher qualifiers (`@Dispatcher(IO)`, `@Dispatcher(Default)`) on Android; `DependencyValues` keys (`swift-dependencies`) on iOS; injectable `Clock`.
+- [x] Redaction helpers for diagnostics export (hosts, cookies, keys) — the only place that may touch secret values for output.
 
 ### 4.3 `core/network` / `Network`
 
-- [ ] Per-profile `OkHttpClient` / `URLSession` factory keyed by profile id; isolated cookie jar / `HTTPCookieStorage` per profile so sessions never mix.
-- [ ] Session cookie handling for `connect.sid` (30-day server TTL): persisted through `SecretStore`/Keychain, restored on launch, cleared on logout or profile deletion.
+- [x] Per-profile `OkHttpClient` / `URLSession` factory keyed by profile id; isolated cookie jar / `HTTPCookieStorage` per profile so sessions never mix.
+- [x] Session cookie handling for `connect.sid` (30-day server TTL): persisted through `SecretStore`/Keychain, restored on launch, cleared on logout or profile deletion.
 - [ ] Auth interceptor: cookie session **or** `X-Api-Key`. Because the API key acts as user 1 and `X-API-User` impersonates any user, API-key profiles are labelled "operator" and the UI warns before saving one; `X-API-User` is never sent.
-- [ ] Optional reverse-proxy `Authorization: Basic` interceptor per profile.
+- [x] Optional reverse-proxy `Authorization: Basic` interceptor per profile.
 - [ ] TLS: system trust by default; pinned self-signed SHA-256 fingerprint mode that fails closed until the user confirms the shown fingerprint; plain-HTTP allowed with a persistent warning flag.
-- [ ] Deprecation-header recorder: captures `Deprecation`, `Sunset`, `Link rel="successor-version"` per endpoint into a diagnostics store surfaced by About → Diagnostics (Phase 10).
-- [ ] Egress allow-list: the profile host, `plex.tv` / `app.plex.tv` during Plex sign-in only, and the image host derived from server settings. Any other host throws in debug and is logged as a violation in release.
-- [ ] Image URL resolver: when the server has image caching on, rewrite `https://image.tmdb.org/<path>` to `<baseUrl>/imageproxy/tmdb/<path>` (and `artworks.thetvdb.com` → `/imageproxy/tvdb/`), which is unauthenticated and cookie-free; otherwise request TMDB directly at the size the layout needs. Coil 3 (`coil-network-okhttp`) on Android; `URLSession` + `NSCache` + disk cache on iOS (Nuke decision recorded with the image-loading implementation after measuring, PRD §18 risk 7).
+- [x] Deprecation-header recorder: captures `Deprecation`, `Sunset`, `Link rel="successor-version"` per endpoint into a diagnostics store surfaced by About → Diagnostics (Phase 10).
+- [x] Egress allow-list: the profile host, `plex.tv` / `app.plex.tv` during Plex sign-in only, and the image host derived from server settings. Any other host throws in debug and is logged as a violation in release.
+- [x] Image URL resolver: when the server has image caching on, rewrite `https://image.tmdb.org/<path>` to `<baseUrl>/imageproxy/tmdb/<path>` (and `artworks.thetvdb.com` → `/imageproxy/tvdb/`), which is unauthenticated and cookie-free; otherwise request TMDB directly at the size the layout needs. Coil 3 (`coil-network-okhttp`) on Android; `URLSession` + `NSCache` + disk cache on iOS (Nuke decision recorded with the image-loading implementation after measuring, PRD §18 risk 7).
 
 ### 4.4 `core/api` / `SeerrAPI` and `core/data` / `Data`
 
-- [ ] Integrate the committed generated clients into the real API modules; CI keeps byte-for-byte verification.
+- [x] Integrate the committed generated clients into the real API modules; CI keeps byte-for-byte verification.
 - [ ] *(depends on §4.1, §4.3, §4.5, §4.6)* Repository interfaces in `core/data/<aggregate>` with a default implementation per aggregate (`AuthRepository`, `ServersRepository`, `DiscoverRepository`, `MediaRepository`, `RequestsRepository`, `IssuesRepository`, `WatchlistRepository`, `UsersRepository`, `SettingsRepository`); aggregate-focused DTO → domain mappers; main-safe suspend functions; reactive reads as `Flow` / `AsyncSequence` from the cache.
-- [ ] Offline read-through: `refresh()` writes the cache; reads observe the cache; a `staleness` timestamp travels with every cached aggregate.
+- [x] Offline read-through: `refresh()` writes the cache; reads observe the cache; a `staleness` timestamp travels with every cached aggregate.
 
 ### 4.5 `core/database` / `Persistence` (caches)
 
 - [ ] Android: Room 3 database (`AndroidSQLiteDriver`, `setQueryCoroutineContext(Dispatchers.IO)`), cohesive entity groups, DAOs with `Flow` reads and `@Upsert` writes, keyed by profile id. Entities for discover pages, media details, requests, issues, watchlist, profile, public settings, status.
-- [ ] iOS: SwiftData `@Model` classes with explicit `@Relationship(deleteRule:inverse:)`, `#Index` on hot fetches, a `@ModelActor` store per aggregate; `PersistentIdentifier` crosses actor boundaries, model objects never do. `VersionedSchema` + `SchemaMigrationPlan` from v1.
-- [ ] Per-profile wipe: deleting a profile removes its rows, cookie jar, secrets, and image cache entries.
+- [x] iOS: SwiftData `@Model` classes with explicit `@Relationship(deleteRule:inverse:)`, `#Index` on hot fetches, a `@ModelActor` store per aggregate; `PersistentIdentifier` crosses actor boundaries, model objects never do. `VersionedSchema` + `SchemaMigrationPlan` from v1.
+- [x] Per-profile wipe: deleting a profile removes its rows, cookie jar, secrets, and image cache entries.
 
 ### 4.6 `core/datastore` / `Persistence` (profiles, preferences, secrets)
 
-- [ ] `ServerProfileStore`: encrypted Proto DataStore (Android) / SwiftData + Keychain (iOS) holding display name, base URL, TLS mode + fingerprint, auth method, cached `/status` and `/settings/public` snapshots.
-- [ ] `SecretStore`: Keystore-backed encrypted storage / Keychain for session cookie, API key, basic-auth password, Plex token. No `toString`, no `Codable` conformance, no interpolation into logs.
-- [ ] `PreferencesStore`: theme (dark default, light, system), active profile id, discover region/watch providers per profile, reduced-motion respect.
-- [ ] *(depends on the `SecretStore` task above)* Make `tools/ci/check-secret-logging.sh` real with the actual symbol names from `SecretStore`; add a fixture test that the hook rejects a known-bad sample.
+- [x] `ServerProfileStore`: encrypted Proto DataStore (Android) / SwiftData + Keychain (iOS) holding display name, base URL, TLS mode + fingerprint, auth method, cached `/status` and `/settings/public` snapshots.
+- [x] `SecretStore`: Keystore-backed encrypted storage / Keychain for session cookie, API key, basic-auth password, Plex token. No `toString`, no `Codable` conformance, no interpolation into logs.
+- [x] `PreferencesStore`: theme (dark default, light, system), active profile id, discover region/watch providers per profile, reduced-motion respect.
+- [x] *(depends on the `SecretStore` task above)* Make `tools/ci/check-secret-logging.sh` real with the actual symbol names from `SecretStore`; add a fixture test that the hook rejects a known-bad sample.
 
 ### 4.7 `core/compat` / `Compat`
 
-- [ ] `ServerVersion` parser (semver with Seerr's `commitTag` suffixes) and `FeatureGate.isSupported(featureId)` reading `api/compat.json` bundled as a resource.
-- [ ] On connect and on every foreground: refresh `/status`; expose `updateAvailable`, `restartRequired`, and an "outside supported range" flag for the banner in Phase 5.
+- [x] `ServerVersion` parser (semver with Seerr's `commitTag` suffixes) and `FeatureGate.isSupported(featureId)` reading `api/compat.json` bundled as a resource.
+- [x] On connect and on every foreground: refresh `/status`; expose `updateAvailable`, `restartRequired`, and an "outside supported range" flag for the banner in Phase 5.
 
 ### 4.8 `core/designsystem` / `DesignSystem` and `core/ui` / `UI`
 
-- [ ] Integrate the committed generated themes from Phase 2; `GaujaTheme` (Material 3, dark default) and the SwiftUI equivalent; Dynamic Type / font scaling verified.
+- [x] Integrate the committed generated themes from Phase 2; `GaujaTheme` (Material 3, dark default) and the SwiftUI equivalent; Dynamic Type / font scaling verified.
 - [ ] Primitive components with previews: buttons, cards, chips, badges, section headers, skeleton loaders, empty/error/offline states.
-- [ ] *(depends on the theme and primitives tasks above)* Content components (cohesive files, spec-driven from `design/screens/components/`): `TitleCard`, `MediaSlider`, `RequestCard`, `RequestBlock`, `RequestButton`, `IssueBlock`, `StatusBadge`, `AirDateBadge`, `PersonCard`, `CompanyCard`, `GenreCard`, `GenreTag`, `KeywordTag`, `DownloadBlock`, `ExternalLinkBlock`, `BlocklistedTagsBadge`. Implement the components needed by this phase; add the rest with their feature consumers. Each has applicable TalkBack/VoiceOver labels and a `@PreviewScreenSizes` / multi-device preview.
-- [ ] Compose stability: state holders expose `ImmutableList`; `Modifier` is the first optional parameter; no work in composition bodies.
+- [x] *(depends on the theme and primitives tasks above)* Content components (cohesive files, spec-driven from `design/screens/components/`): `TitleCard`, `MediaSlider`, `RequestCard`, `RequestBlock`, `RequestButton`, `IssueBlock`, `StatusBadge`, `AirDateBadge`, `PersonCard`, `CompanyCard`, `GenreCard`, `GenreTag`, `KeywordTag`, `DownloadBlock`, `ExternalLinkBlock`, `BlocklistedTagsBadge`. Implement the components needed by this phase; add the rest with their feature consumers. Each has applicable TalkBack/VoiceOver labels and a `@PreviewScreenSizes` / multi-device preview.
+- [x] Compose stability: state holders expose `ImmutableList`; `Modifier` is the first optional parameter; no work in composition bodies.
 
 ### 4.9 `core/navigation` / `Navigation`
 
-- [ ] Android: `@Serializable` `NavKey` routes added with each screen, a singleton `Navigator` owning the back stack, `EntryProviderInstaller` multibinding, `rememberNavBackStack` at the root, `ListDetailSceneStrategy` for adaptive list-detail areas, both entry decorators wired.
-- [ ] iOS: `Route` enums per feature, a root `NavigationPath` owner, `NavigationSplitView` on regular width and `NavigationStack` on compact, `navigationDestination(for:)` centralised at the root, idempotent destination builders.
-- [ ] Deep-link key parsing for `gauja://server/<profileId>/...` and Seerr web URLs (`/movie/<id>`, `/tv/<id>`, `/person/<id>`, `/collection/<id>`, `/requests`, `/issues/<id>`, `/reset-password/<guid>`); registration itself lands in Phase 11.
+- [x] Android: `@Serializable` `NavKey` routes added with each screen, a singleton `Navigator` owning the back stack, `EntryProviderInstaller` multibinding, `rememberNavBackStack` at the root, `ListDetailSceneStrategy` for adaptive list-detail areas, both entry decorators wired.
+- [x] iOS: `Route` enums per feature, a root `NavigationPath` owner, `NavigationSplitView` on regular width and `NavigationStack` on compact, `navigationDestination(for:)` centralised at the root, idempotent destination builders.
+- [x] Deep-link key parsing for `gauja://server/<profileId>/...` and Seerr web URLs (`/movie/<id>`, `/tv/<id>`, `/person/<id>`, `/collection/<id>`, `/requests`, `/issues/<id>`, `/reset-password/<guid>`); registration itself lands in Phase 11.
 
 ### 4.10 `core/testing` / `Testing`
 

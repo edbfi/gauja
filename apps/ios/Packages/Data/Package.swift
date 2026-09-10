@@ -10,9 +10,11 @@ let package = Package(
     dependencies: [
         .package(path: "../SeerrAPI"),
         .package(path: "../Model"),
+        .package(path: "../Persistence"),
         .package(path: "../Common"),
         .package(path: "../Compat"),
         .package(path: "../Network"),
+        .package(path: "../Testing"),
         .package(url: "https://github.com/pointfreeco/swift-dependencies", exact: "1.17.1"),
         .package(url: "https://github.com/apple/swift-openapi-runtime", exact: "1.12.1"),
     ],
@@ -20,7 +22,7 @@ let package = Package(
         .target(
             name: "Data",
             dependencies: [
-                "SeerrAPI", "Model", "Common", "Compat", "Network",
+                "SeerrAPI", "Model", "Common", "Persistence", "Compat", "Network",
                 .product(name: "Dependencies", package: "swift-dependencies"),
                 .product(name: "OpenAPIRuntime", package: "swift-openapi-runtime"),
             ],
@@ -28,7 +30,9 @@ let package = Package(
                 .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
                 .enableUpcomingFeature("InferIsolatedConformances"),
             ]),
-        .testTarget(name: "DataTests", dependencies: ["Data"]),
+        .testTarget(
+            name: "DataTests", dependencies: ["Data", .product(name: "GaujaTesting", package: "Testing")],
+            swiftSettings: [.defaultIsolation(MainActor.self)]),
     ],
     swiftLanguageModes: [.v6]
 )

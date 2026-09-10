@@ -1,0 +1,32 @@
+<!-- SPDX-FileCopyrightText: 2026 Gauja contributors -->
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<resources>
+    <string name="title_missing">Untitled</string>
+    <string name="artwork_missing">No artwork</string>
+    <string name="media_movie">Movie</string>
+    <string name="media_tv">TV</string>
+    <string name="media_unknown">Unknown media type</string>
+    <string name="rating">Rating: %1$.1f out of 10</string>
+    <string name="status_unknown">Unknown status</string>
+    <string name="status_pending">Pending</string>
+    <string name="status_processing">Processing</string>
+    <string name="status_partial">Partially available</string>
+    <string name="status_available">Available</string>
+    <string name="status_blocklisted">Blocklisted</string>
+    <string name="status_deleted">Deleted</string>
+    <string name="status_approved">Approved</string>
+    <string name="status_declined">Declined</string>
+    <string name="status_failed">Failed</string>
+    <string name="status_completed">Completed</string>
+    <string name="status_4k">4K: %1$s</string>
+    <string name="error_network">The server could not be reached. Try again.</string>
+    <string name="error_tls">The secure connection could not be verified. Review this server’s trust settings.</string>
+    <string name="error_auth">Sign in to this server again.</string>
+    <string name="error_permission">You do not have permission to view this content.</string>
+    <string name="error_notfound">This content was not found.</string>
+    <string name="error_validation">The server response or input was invalid.</string>
+    <string name="error_serverversion">This feature is not supported by this server version.</string>
+    <string name="error_offline">You are offline. Cached content remains available.</string>
+    <string name="error_unknown">Saved data could not be read. Try reopening Gauja.</string>
+    <string name="retry">Retry</string>
+</resources>

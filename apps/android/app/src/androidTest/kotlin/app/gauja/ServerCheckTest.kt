@@ -11,9 +11,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.gauja.core.data.servers.ProbeModule
 import app.gauja.core.data.servers.ServerProbe
 import app.gauja.core.model.Compatibility
-import app.gauja.core.model.MediaServerType
 import app.gauja.core.model.ServerAddress
 import app.gauja.core.model.ServerSnapshot
+import app.gauja.core.model.status.MediaServerType
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.android.testing.HiltAndroidRule

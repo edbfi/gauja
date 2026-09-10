@@ -38,28 +38,32 @@ jobs:
           xcode-version: '26.6'
       - run: tools/ci/install-apple-tools.sh
       - run: tools/contract/python.sh --install
+      - run: python3 tools/contract/bundle-resources.py --check
       - run: tools/codegen/generate.sh --check --platform ios
       - run: tools/ci/check-swift.sh
       - run: tools/ci/check-package-graph.sh
       - run: python3 tools/ci/check-api-boundary.py
+      - run: tools/ci/egress-test.sh ios
       - name: Generate and build app
         working-directory: apps/ios
         run: |
           xcodegen generate
           mkdir -p Gauja.xcodeproj/project.xcworkspace/xcshareddata/swiftpm
           cp Package.resolved Gauja.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
-          xcodebuild -project Gauja.xcodeproj -scheme Gauja -destination 'generic/platform=iOS Simulator' -derivedDataPath DerivedData -skipPackagePluginValidation -onlyUsePackageVersionsFromResolvedFile build CODE_SIGNING_ALLOWED=NO
+          xcodebuild -project Gauja.xcodeproj -scheme GaujaHello -destination 'generic/platform=iOS Simulator' -derivedDataPath DerivedData -skipPackagePluginValidation -onlyUsePackageVersionsFromResolvedFile build
+      - name: Live server acceptance
+        run: |
+          xcodebuild -downloadPlatform iOS
+          python3 tools/ci/hello-server.py ios
       - name: Swift Testing packages
         run: |
-          for package in Model Compat SeerrAPI Network Data; do
+          for package in Model Common Compat SeerrAPI Persistence Network Data; do
             swift test --package-path "apps/ios/Packages/$package" --disable-automatic-resolution
           done
       - run: python3 tools/ci/check-licenses.py ios
       - run: python3 tools/ci/replay-contract.py ios
-      - run: tools/ci/egress-test.sh ios
       - name: Phone and tablet smoke
         run: |
-          xcodebuild -downloadPlatform iOS
           xcodes runtimes install "iOS 18.6"
           python3 tools/ci/ios-smoke.py --evidence-dir "$RUNNER_TEMP/native-ci/smoke"
       - name: Device architecture size report

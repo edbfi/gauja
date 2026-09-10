@@ -24,7 +24,7 @@ import Testing
             .utf8))
     let result = mapServer(address, status, settings)
     #expect(result.title == "Library")
-    #expect(result.mediaServerType == .unknown)
+    #expect(result.mediaServerType == .unrecognized(999))
     #expect(result.initialized == false)
     #expect(result.compatibility == .tested)
 }

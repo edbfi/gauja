@@ -103,9 +103,12 @@ class TokenTests(unittest.TestCase):
             subprocess.run([sys.executable, str(ROOT / "tools/tokens/generate-swiftui.py"), "--tokens", str(tokens), "--output", str(output)], check=True)
             styles = (output / "GaujaTypographyStyle.swift").read_text(encoding="utf-8")
             self.assertIn("lineHeight: 1.75, letterSpacing: 0.75", styles)
-            self.assertIn("metrics.scaledValue(for: size * lineHeight)", styles)
-            self.assertIn("metrics.scaledValue(for: letterSpacing)", styles)
-            self.assertIn("GaujaTypographyStyle.bodyLarge.font", (output / "Font+Gauja.swift").read_text(encoding="utf-8"))
+            self.assertIn("_ category: DynamicTypeSize", styles)
+            self.assertIn("case .accessibility5: category = .accessibilityExtraExtraExtraLarge", styles)
+            self.assertIn("@unknown default: category = .large", styles)
+            self.assertIn("metrics.scaledValue(for: size * lineHeight, compatibleWith: traits)", styles)
+            self.assertIn("metrics.scaledValue(for: letterSpacing, compatibleWith: traits)", styles)
+            self.assertIn("GaujaTypographyStyle.bodyLarge(category).font", (output / "Font+Gauja.swift").read_text(encoding="utf-8"))
 
     def test_color_theme_parity_and_contrast(self):
         values = load(ROOT / "design/tokens.json")

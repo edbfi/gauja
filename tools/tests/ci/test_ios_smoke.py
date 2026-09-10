@@ -87,7 +87,7 @@ class SimulatorTests(unittest.TestCase):
 
     def test_result_validation_requires_expected_bodies(self):
         expected = smoke.EXPECTED["Gauja"]
-        summary = {"totalTestCount": 2, "passedTests": 2, "failedTests": 0, "skippedTests": 0}
+        summary = {"totalTestCount": len(expected), "passedTests": len(expected), "failedTests": 0, "skippedTests": 0}
         tree = {"testNodes": [{"nodeType": "Test Suite", "children": [
             {"nodeType": "Test Case", "name": name + "()", "result": "Passed"} for name in expected]}]}
         smoke.validate_results(summary, tree, expected)

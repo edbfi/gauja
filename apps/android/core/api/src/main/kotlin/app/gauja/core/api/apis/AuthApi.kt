@@ -14,6 +14,7 @@ import app.gauja.core.api.models.GetAuthJellyfinQuickconnectCheck200Response
 import app.gauja.core.api.models.PostAuthJellyfinQuickconnectAuthenticateRequest
 import app.gauja.core.api.models.PostAuthJellyfinQuickconnectInitiate200Response
 import app.gauja.core.api.models.PostAuthJellyfinRequest
+import app.gauja.core.api.models.PostAuthLocal200Response
 import app.gauja.core.api.models.PostAuthLocalRequest
 import app.gauja.core.api.models.PostAuthLogout200Response
 import app.gauja.core.api.models.PostAuthPlexRequest
@@ -95,10 +96,10 @@ interface AuthApi {
      *  - 200: OK
      *
      * @param postAuthLocalRequest 
-     * @return [User]
+     * @return [PostAuthLocal200Response]
      */
     @POST("auth/local")
-    suspend fun postAuthLocal(@Body postAuthLocalRequest: PostAuthLocalRequest): Response<User>
+    suspend fun postAuthLocal(@Body postAuthLocalRequest: PostAuthLocalRequest): Response<PostAuthLocal200Response>
 
     /**
      * POST auth/logout

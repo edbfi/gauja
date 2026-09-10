@@ -19,3 +19,12 @@ func invalidAddress(_ text: String) { #expect(ServerAddress(text) == nil) }
     #expect(!address.isPlainHTTP)
     #expect(address.description == "[SERVER]")
 }
+
+@Test func credentialOriginsUseSchemeHostAndEffectivePort() throws {
+    let base = try #require(ServerAddress("https://example.test"))
+    #expect(base.origin == ServerAddress("https://EXAMPLE.test:443/path")?.origin)
+    for input in ["http://example.test", "https://other.test", "https://example.test:444"] {
+        #expect(base.origin != ServerAddress(input)?.origin)
+    }
+    #expect(ServerAddress("http://[::1]/one")?.origin == ServerAddress("http://[::1]:80/two")?.origin)
+}

@@ -5,63 +5,63 @@
 import SwiftUI
 
 public extension Font {
-    static var gaujaBodyLarge: Font {
-        GaujaTypographyStyle.bodyLarge.font
+    static func gaujaBodyLarge(_ category: DynamicTypeSize) -> Font {
+        GaujaTypographyStyle.bodyLarge(category).font
     }
 
-    static var gaujaBodyMedium: Font {
-        GaujaTypographyStyle.bodyMedium.font
+    static func gaujaBodyMedium(_ category: DynamicTypeSize) -> Font {
+        GaujaTypographyStyle.bodyMedium(category).font
     }
 
-    static var gaujaBodySmall: Font {
-        GaujaTypographyStyle.bodySmall.font
+    static func gaujaBodySmall(_ category: DynamicTypeSize) -> Font {
+        GaujaTypographyStyle.bodySmall(category).font
     }
 
-    static var gaujaDisplayLarge: Font {
-        GaujaTypographyStyle.displayLarge.font
+    static func gaujaDisplayLarge(_ category: DynamicTypeSize) -> Font {
+        GaujaTypographyStyle.displayLarge(category).font
     }
 
-    static var gaujaDisplayMedium: Font {
-        GaujaTypographyStyle.displayMedium.font
+    static func gaujaDisplayMedium(_ category: DynamicTypeSize) -> Font {
+        GaujaTypographyStyle.displayMedium(category).font
     }
 
-    static var gaujaDisplaySmall: Font {
-        GaujaTypographyStyle.displaySmall.font
+    static func gaujaDisplaySmall(_ category: DynamicTypeSize) -> Font {
+        GaujaTypographyStyle.displaySmall(category).font
     }
 
-    static var gaujaHeadlineLarge: Font {
-        GaujaTypographyStyle.headlineLarge.font
+    static func gaujaHeadlineLarge(_ category: DynamicTypeSize) -> Font {
+        GaujaTypographyStyle.headlineLarge(category).font
     }
 
-    static var gaujaHeadlineMedium: Font {
-        GaujaTypographyStyle.headlineMedium.font
+    static func gaujaHeadlineMedium(_ category: DynamicTypeSize) -> Font {
+        GaujaTypographyStyle.headlineMedium(category).font
     }
 
-    static var gaujaHeadlineSmall: Font {
-        GaujaTypographyStyle.headlineSmall.font
+    static func gaujaHeadlineSmall(_ category: DynamicTypeSize) -> Font {
+        GaujaTypographyStyle.headlineSmall(category).font
     }
 
-    static var gaujaLabelLarge: Font {
-        GaujaTypographyStyle.labelLarge.font
+    static func gaujaLabelLarge(_ category: DynamicTypeSize) -> Font {
+        GaujaTypographyStyle.labelLarge(category).font
     }
 
-    static var gaujaLabelMedium: Font {
-        GaujaTypographyStyle.labelMedium.font
+    static func gaujaLabelMedium(_ category: DynamicTypeSize) -> Font {
+        GaujaTypographyStyle.labelMedium(category).font
     }
 
-    static var gaujaLabelSmall: Font {
-        GaujaTypographyStyle.labelSmall.font
+    static func gaujaLabelSmall(_ category: DynamicTypeSize) -> Font {
+        GaujaTypographyStyle.labelSmall(category).font
     }
 
-    static var gaujaTitleLarge: Font {
-        GaujaTypographyStyle.titleLarge.font
+    static func gaujaTitleLarge(_ category: DynamicTypeSize) -> Font {
+        GaujaTypographyStyle.titleLarge(category).font
     }
 
-    static var gaujaTitleMedium: Font {
-        GaujaTypographyStyle.titleMedium.font
+    static func gaujaTitleMedium(_ category: DynamicTypeSize) -> Font {
+        GaujaTypographyStyle.titleMedium(category).font
     }
 
-    static var gaujaTitleSmall: Font {
-        GaujaTypographyStyle.titleSmall.font
+    static func gaujaTitleSmall(_ category: DynamicTypeSize) -> Font {
+        GaujaTypographyStyle.titleSmall(category).font
     }
 }

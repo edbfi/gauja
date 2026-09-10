@@ -41,9 +41,23 @@ android {
 }
 
 dependencies {
+    testImplementation(project(":core:testing"))
+    testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.coroutines.test)
+    testImplementation(libs.turbine)
     // Compose's older transitive Espresso uses InputManager APIs removed in API 37.
     constraints { androidTestImplementation(libs.espresso) }
     implementation(project(":feature:servers"))
+    implementation(project(":core:data"))
+    implementation(project(":core:datastore"))
+    implementation(project(":core:model"))
+    implementation(project(":core:common"))
+    implementation(project(":core:ui"))
+    implementation(libs.compose.foundation)
+    implementation(libs.coroutines.android)
+    implementation(libs.lifecycle.runtime)
+    implementation(libs.lifecycle.viewmodel)
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
     implementation(libs.activity.compose)
@@ -51,6 +65,8 @@ dependencies {
     implementation(libs.navigation.runtime)
     implementation(libs.lifecycle.navigation)
     androidTestImplementation(project(":core:data"))
+    androidTestImplementation(project(":core:datastore"))
+    androidTestImplementation(project(":core:common"))
     androidTestImplementation(project(":core:model"))
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.compose.test)

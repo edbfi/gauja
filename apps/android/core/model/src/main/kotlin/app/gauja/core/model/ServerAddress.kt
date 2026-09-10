@@ -12,6 +12,14 @@ value class ServerAddress private constructor(val value: String) {
     val isPlainHttp: Boolean
         get() = value.startsWith("http://")
 
+    // Paths do not change credential scope; explicit default ports are equivalent.
+    val origin: String
+        get() {
+            val uri = URI(value)
+            val port = if (uri.port == -1) if (isPlainHttp) 80 else 443 else uri.port
+            return "${uri.scheme}://${uri.host}:$port"
+        }
+
     override fun toString(): String = "[SERVER]"
 
     companion object {

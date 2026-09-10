@@ -1,0 +1,68 @@
+{
+  "upstreamCommit": "69f73a6f1486fdb51b8ddae9a94a8dfb629f461c",
+  "recordedAt": "2026-09-07T12:34:47.779459+00:00",
+  "scenario": "initialized-local-auth",
+  "scrubbedFields": [
+    "apiKey",
+    "jellyfinAuthToken",
+    "password",
+    "plexClientIdentifier",
+    "plexToken",
+    "resetPasswordGuid",
+    "secret",
+    "sessionCookie",
+    "vapidPublic"
+  ],
+  "responses": [
+    {
+      "operationId": "postAuthLocal",
+      "method": "POST",
+      "path": "/api/v1/auth/local",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": "auth/postAuthLocal.json"
+    },
+    {
+      "operationId": "getAuthMe",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": "auth/getAuthMe.json"
+    },
+    {
+      "operationId": "getStatus",
+      "method": "GET",
+      "path": "/api/v1/status?checkUpdateAvailable=false",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": "public/getStatus-initialized.json"
+    },
+    {
+      "operationId": "getSettingsPublic",
+      "method": "GET",
+      "path": "/api/v1/settings/public",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": "settings/getSettingsPublic-initialized.json"
+    },
+    {
+      "operationId": "postAuthLogout",
+      "method": "POST",
+      "path": "/api/v1/auth/logout",
+      "status": 200,
+      "headers": {
+        "content-type": "application/json; charset=utf-8"
+      },
+      "body": "auth/postAuthLogout.json"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "blocklist": {
+    "min": "3.4.1",
+    "max": null,
+    "endpoint": "/blocklist",
+    "note": "3.4.1 is Gauja's supported floor, not the feature introduction version. Prefer this route; /blacklist sunset was 2026-06-01 and is not called."
+  },
+  "discover.sliders": {
+    "min": "3.4.1",
+    "max": null,
+    "endpoint": "/settings/discover",
+    "note": "3.4.1 is Gauja's supported floor, not the feature introduction version. Server-defined order and enabled state."
+  },
+  "quickconnect": {
+    "min": "3.4.1",
+    "max": null,
+    "endpoint": "/auth/jellyfin/quickconnect/initiate",
+    "note": "3.4.1 is Gauja's supported floor, not the feature introduction version. Jellyfin only; requires the server to enable Quick Connect."
+  },
+  "metadata.providers": {
+    "min": "3.4.1",
+    "max": null,
+    "endpoint": "/settings/metadatas",
+    "note": "3.4.1 is Gauja's supported floor, not the feature introduction version. Native provider settings and connection test."
+  }
+}
